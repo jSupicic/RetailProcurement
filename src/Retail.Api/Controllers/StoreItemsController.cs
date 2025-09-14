@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Retail.Application.DTOs;
 using Retail.Domain.Entities;
 using Retail.Infrastructure.Context;
+using Retail.Infrastructure.Repositories;
 
 namespace Retail.Api.Controllers
 {
@@ -11,20 +12,19 @@ namespace Retail.Api.Controllers
     public class StoreItemsController : ControllerBase
     {
         private readonly RetailDbContext _context;
+        private readonly IRepository<StoreItem> _storeItemRepository;
 
-        public StoreItemsController(RetailDbContext context)
+        public StoreItemsController(RetailDbContext context, IRepository<StoreItem> storeItemRepository)
         {
             _context = context;
+            _storeItemRepository = storeItemRepository;
         }
 
         // GET: /api/store-items
         [HttpGet]
         public async Task<ActionResult<IEnumerable<StoreItemDto>>> GetStoreItems()
         {
-            var items = await _context.StoreItems
-                .Include(s => s.SupplierStoreItems)
-                    .ThenInclude(ssi => ssi.Supplier)
-                .ToListAsync();
+            var items = await _storeItemRepository.GetAllAsync();
 
             var result = items.Select(item => new StoreItemDto
             {

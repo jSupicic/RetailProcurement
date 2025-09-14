@@ -1,10 +1,9 @@
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 using Retail.Application.Services;
 using Retail.Infrastructure.Context;
 using Bogus;
 using Retail.Infrastructure.Seed;
+using Retail.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +25,9 @@ builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 // Register services / repositories
 builder.Services.AddScoped<IItemService, ItemService>();
+
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
 
 var app = builder.Build();
 
