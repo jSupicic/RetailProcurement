@@ -1,0 +1,47 @@
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
+using Retail.Application.Services;
+using Retail.Infrastructure.Context;
+using Bogus;
+using Retail.Infrastructure.Seed;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddOpenApi();
+
+// Add services
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// EF Core: configure connection string (replace with your local)
+var conn = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<RetailDbContext>(opt => opt.UseNpgsql(conn, b => b.MigrationsAssembly("Retail.Infrastructure")));
+
+// AutoMapper
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
+// Register services / repositories
+builder.Services.AddScoped<IItemService, ItemService>();
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<RetailDbContext>();
+    db.Database.Migrate(); // Apply migrations
+    SeedData.SeedDatabase(db);
+}
+
+
+app.UseHttpsRedirection();
+app.MapControllers();
+app.Run();
