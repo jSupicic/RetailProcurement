@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Retail.Application.Services;
 using Retail.Infrastructure.Context;
 
 namespace Retail.Infrastructure.Repositories

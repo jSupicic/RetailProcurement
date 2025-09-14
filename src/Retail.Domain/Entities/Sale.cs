@@ -10,6 +10,6 @@ public class Sale
     public DateTime SaleDate { get; set; }
 
     // Navigation
-    public StoreItem StoreItem { get; set; } = null!;
-    public Supplier Supplier { get; set; } = null!;
+    public virtual StoreItem StoreItem { get; set; } = null!;
+    public virtual Supplier Supplier { get; set; } = null!;
 }

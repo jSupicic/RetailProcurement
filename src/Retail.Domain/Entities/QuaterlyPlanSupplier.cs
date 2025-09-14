@@ -7,6 +7,6 @@ public class QuarterlyPlanSupplier
     public int SupplierId { get; set; }
 
     // Navigation
-    public QuarterlyPlan QuarterlyPlan { get; set; } = null!;
-    public Supplier Supplier { get; set; } = null!;
+    public virtual QuarterlyPlan QuarterlyPlan { get; set; } = null!;
+    public virtual Supplier Supplier { get; set; } = null!;
 }

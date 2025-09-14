@@ -12,9 +12,9 @@ namespace Retail.Domain.Entities
         public string? Address { get; set; }
 
         // Relationships
-        public ICollection<SupplierStoreItem> SupplierStoreItems { get; set; } = new List<SupplierStoreItem>();
-        public ICollection<Sale> Sales { get; set; } = new List<Sale>();
-        public ICollection<QuarterlyPlanSupplier> QuarterlyPlanSuppliers { get; set; } = new List<QuarterlyPlanSupplier>();
+        public virtual ICollection<SupplierStoreItem> SupplierStoreItems { get; set; } = new List<SupplierStoreItem>();
+        public virtual ICollection<Sale> Sales { get; set; } = new List<Sale>();
+        public virtual ICollection<QuarterlyPlanSupplier> QuarterlyPlanSuppliers { get; set; } = new List<QuarterlyPlanSupplier>();
     }
 
 }

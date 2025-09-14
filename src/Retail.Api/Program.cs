@@ -18,13 +18,15 @@ builder.Services.AddSwaggerGen();
 
 // EF Core: configure connection string (replace with your local)
 var conn = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<RetailDbContext>(opt => opt.UseNpgsql(conn, b => b.MigrationsAssembly("Retail.Infrastructure")));
+builder.Services.AddDbContext<RetailDbContext>(opt => opt
+    .UseLazyLoadingProxies()
+    .UseNpgsql(conn, b => b.MigrationsAssembly("Retail.Infrastructure")));
 
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 // Register services / repositories
-builder.Services.AddScoped<IItemService, ItemService>();
+builder.Services.AddScoped<IStoreItemService, StoreItemService>();
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 

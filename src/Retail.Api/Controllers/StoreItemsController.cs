@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Retail.Application.DTOs;
-using Retail.Domain.Entities;
-using Retail.Infrastructure.Context;
-using Retail.Infrastructure.Repositories;
+using Retail.Application.Services;
 
 namespace Retail.Api.Controllers
 {
@@ -11,123 +8,48 @@ namespace Retail.Api.Controllers
     [Route("api/[controller]")]
     public class StoreItemsController : ControllerBase
     {
-        private readonly RetailDbContext _context;
-        private readonly IRepository<StoreItem> _storeItemRepository;
+        private readonly IStoreItemService _storeItemService;
 
-        public StoreItemsController(RetailDbContext context, IRepository<StoreItem> storeItemRepository)
+        public StoreItemsController(IStoreItemService storeItemService)
         {
-            _context = context;
-            _storeItemRepository = storeItemRepository;
+            _storeItemService = storeItemService;
         }
 
-        // GET: /api/store-items
         [HttpGet]
         public async Task<ActionResult<IEnumerable<StoreItemDto>>> GetStoreItems()
         {
-            var items = await _storeItemRepository.GetAllAsync();
-
-            var result = items.Select(item => new StoreItemDto
-            {
-                Id = item.Id,
-                Name = item.Name,
-                Description = item.Description,
-                Price = item.Price,
-                Suppliers = item.SupplierStoreItems.Select(ssi => new SupplierDto
-                {
-                    Id = ssi.SupplierId,
-                    Name = ssi.Supplier.Name,
-                    SupplierPrice = ssi.SupplierPrice
-                }).ToList()
-            });
-
-            return Ok(result);
+            var items = await _storeItemService.GetAllAsync();
+            return Ok(items);
         }
 
-        // GET: /api/store-items/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<StoreItemDto>> GetStoreItem(int id)
         {
-            var item = await _context.StoreItems
-                .Include(s => s.SupplierStoreItems)
-                    .ThenInclude(ssi => ssi.Supplier)
-                .FirstOrDefaultAsync(s => s.Id == id);
-
-            if (item == null)
-                return NotFound();
-
-            var dto = new StoreItemDto
-            {
-                Id = item.Id,
-                Name = item.Name,
-                Description = item.Description,
-                Price = item.Price,
-                StockQuantity = item.StockQuantity,
-                Suppliers = item.SupplierStoreItems.Select(ssi => new SupplierDto
-                {
-                    Id = ssi.SupplierId,
-                    Name = ssi.Supplier.Name,
-                    SupplierPrice = ssi.SupplierPrice
-                }).ToList()
-            };
-
+            var dto = await _storeItemService.GetByIdAsync(id);
+            if (dto == null) return NotFound();
             return Ok(dto);
         }
 
-        // POST: /api/store-items
         [HttpPost]
         public async Task<ActionResult<StoreItemDto>> CreateStoreItem(StoreItemCreateDto dto)
         {
-            var entity = new StoreItem
-            {
-                Name = dto.Name,
-                Description = dto.Description,
-                Price = dto.Price,
-                StockQuantity = dto.StockQuantity
-            };
-
-            _context.StoreItems.Add(entity);
-            await _context.SaveChangesAsync();
-
-            var result = new StoreItemDto
-            {
-                Id = entity.Id,
-                Name = entity.Name,
-                Description = entity.Description,
-                Price = entity.Price,
-                StockQuantity = entity.StockQuantity
-            };
-
-            return CreatedAtAction(nameof(GetStoreItem), new { id = entity.Id }, result);
+            var created = await _storeItemService.CreateAsync(dto);
+            return CreatedAtAction(nameof(GetStoreItem), new { id = created.Id }, created);
         }
 
-        // PUT: /api/store-items/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateStoreItem(int id, StoreItemUpdateDto dto)
         {
-            var entity = await _context.StoreItems.FindAsync(id);
-            if (entity == null)
-                return NotFound();
-
-            entity.Name = dto.Name;
-            entity.Description = dto.Description;
-            entity.Price = dto.Price;
-            entity.StockQuantity = dto.StockQuantity;
-
-            await _context.SaveChangesAsync();
+            var updated = await _storeItemService.UpdateAsync(id, dto);
+            if (!updated) return NotFound();
             return NoContent();
         }
 
-        // DELETE: /api/store-items/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteStoreItem(int id)
         {
-            var entity = await _context.StoreItems.FindAsync(id);
-            if (entity == null)
-                return NotFound();
-
-            _context.StoreItems.Remove(entity);
-            await _context.SaveChangesAsync();
-
+            var deleted = await _storeItemService.DeleteAsync(id);
+            if (!deleted) return NotFound();
             return NoContent();
         }
     }

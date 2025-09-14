@@ -8,5 +8,5 @@ public class QuarterlyPlan
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Relationships
-    public ICollection<QuarterlyPlanSupplier> QuarterlyPlanSuppliers { get; set; } = new List<QuarterlyPlanSupplier>();
+    public virtual ICollection<QuarterlyPlanSupplier> QuarterlyPlanSuppliers { get; set; } = new List<QuarterlyPlanSupplier>();
 }

@@ -8,6 +8,6 @@ public class SupplierStoreItem
     public decimal SupplierPrice { get; set; }
 
     // Navigation
-    public Supplier Supplier { get; set; } = null!;
-    public StoreItem StoreItem { get; set; } = null!;
+    public virtual Supplier Supplier { get; set; } = null!;
+    public virtual StoreItem StoreItem { get; set; } = null!;
 }
