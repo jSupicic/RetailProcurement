@@ -4,6 +4,7 @@ using Retail.Infrastructure.Context;
 using Bogus;
 using Retail.Infrastructure.Seed;
 using Retail.Infrastructure.Repositories;
+using Retail.Application.Mappings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,10 +24,11 @@ builder.Services.AddDbContext<RetailDbContext>(opt => opt
     .UseNpgsql(conn, b => b.MigrationsAssembly("Retail.Infrastructure")));
 
 // AutoMapper
-builder.Services.AddAutoMapper(typeof(Program).Assembly);
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 // Register services / repositories
 builder.Services.AddScoped<IStoreItemService, StoreItemService>();
+builder.Services.AddScoped<ISupplierService, SupplierService>();
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 

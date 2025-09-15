@@ -1,4 +1,5 @@
-﻿using Retail.Application.DTOs;
+﻿using AutoMapper;
+using Retail.Application.DTOs;
 using Retail.Domain.Entities;
 using Retail.Infrastructure.Repositories;
 
@@ -7,73 +8,38 @@ namespace Retail.Application.Services
     public class StoreItemService : IStoreItemService
     {
         private readonly IRepository<StoreItem> _storeItemRepository;
+        private readonly IMapper _mapper;
 
-        public StoreItemService(IRepository<StoreItem> storeItemRepository)
+        public StoreItemService(
+            IRepository<StoreItem> storeItemRepository,
+            IMapper mapper)
         {
             _storeItemRepository = storeItemRepository;
+            _mapper = mapper;
         }
 
         public async Task<IEnumerable<StoreItemDto>> GetAllAsync()
         {
             var items = await _storeItemRepository.GetAllAsync();
-            return items.Select(item => new StoreItemDto
-            {
-                Id = item.Id,
-                Name = item.Name,
-                Description = item.Description,
-                Price = item.Price,
-                StockQuantity = item.StockQuantity,
-                Suppliers = item.SupplierStoreItems.Select(ssi => new SupplierDto
-                {
-                    Id = ssi.SupplierId,
-                    Name = ssi.Supplier.Name,
-                    SupplierPrice = ssi.SupplierPrice
-                }).ToList()
-            });
+
+            return _mapper.Map<IEnumerable<StoreItemDto>>(items);
         }
 
         public async Task<StoreItemDto?> GetByIdAsync(int id)
         {
             var item = await _storeItemRepository.GetByIdAsync(id);
-            if (item == null) return null;
 
-            return new StoreItemDto
-            {
-                Id = item.Id,
-                Name = item.Name,
-                Description = item.Description,
-                Price = item.Price,
-                StockQuantity = item.StockQuantity,
-                Suppliers = item.SupplierStoreItems.Select(ssi => new SupplierDto
-                {
-                    Id = ssi.SupplierId,
-                    Name = ssi.Supplier.Name,
-                    SupplierPrice = ssi.SupplierPrice
-                }).ToList()
-            };
+            return item == null ? null : _mapper.Map<StoreItemDto>(item);
         }
 
         public async Task<StoreItemDto> CreateAsync(StoreItemCreateDto dto)
         {
-            var entity = new StoreItem
-            {
-                Name = dto.Name,
-                Description = dto.Description,
-                Price = dto.Price ?? 0,
-                StockQuantity = dto.StockQuantity ?? 0
-            };
+            var entity = _mapper.Map<StoreItem>(dto);
 
             await _storeItemRepository.AddAsync(entity);
             await _storeItemRepository.SaveChangesAsync();
 
-            return new StoreItemDto
-            {
-                Id = entity.Id,
-                Name = entity.Name,
-                Description = entity.Description,
-                Price = entity.Price,
-                StockQuantity = entity.StockQuantity
-            };
+            return _mapper.Map<StoreItemDto>(entity);
         }
 
         public async Task<bool> UpdateAsync(int id, StoreItemUpdateDto dto)
@@ -81,11 +47,8 @@ namespace Retail.Application.Services
             var entity = await _storeItemRepository.GetByIdAsync(id);
             if (entity == null) return false;
 
-            entity.Name = dto.Name ?? entity.Name;
-            entity.Description = dto.Description ?? entity.Description;
-            entity.Price = dto.Price ?? entity.Price;
-            entity.StockQuantity = dto.StockQuantity ?? entity.StockQuantity;
-
+            _mapper.Map(dto, entity);
+            
             await _storeItemRepository.UpdateAsync(entity);
             await _storeItemRepository.SaveChangesAsync();
 

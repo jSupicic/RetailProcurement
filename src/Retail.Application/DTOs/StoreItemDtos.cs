@@ -5,19 +5,25 @@
         public int Id { get; set; }
         public string? Name { get; set; }
         public string? Description { get; set; }
-        public decimal Price { get; set; }
         public int StockQuantity { get; set; }
 
-        public List<SupplierDto> Suppliers { get; set; } = new();
+        public List<SupplierStoreItemDto>? Suppliers { get; set; }
     }
 
     public class StoreItemCreateDto
     {
-        public string? Name { get; set; }
+        public required string Name { get; set; }
         public string? Description { get; set; }
-        public decimal? Price { get; set; }
+        public required decimal Price { get; set; }
+        public required string Supplier { get; set; }
         public int? StockQuantity { get; set; }
     }
 
     public class StoreItemUpdateDto : StoreItemCreateDto { }
+
+    public class SupplierStoreItemDto
+    {
+        public required string Name { get; set; }
+        public decimal Price { get; set; }
+    }
 }
