@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Retail.Infrastructure.Context;
@@ -11,9 +12,11 @@ using Retail.Infrastructure.Context;
 namespace Retail.Infrastructure.Migrations
 {
     [DbContext(typeof(RetailDbContext))]
-    partial class RetailDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250916183330_fixes")]
+    partial class fixes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,10 +42,6 @@ namespace Retail.Infrastructure.Migrations
                     b.Property<int>("Quarter")
                         .HasColumnType("integer");
 
-                    b.PrimitiveCollection<int[]>("SupplierIds")
-                        .IsRequired()
-                        .HasColumnType("integer[]");
-
                     b.Property<int>("Year")
                         .HasColumnType("integer");
 
@@ -52,6 +51,29 @@ namespace Retail.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("QuarterlyPlans");
+                });
+
+            modelBuilder.Entity("QuarterlyPlanSupplier", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("PlanId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SupplierId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlanId");
+
+                    b.HasIndex("SupplierId");
+
+                    b.ToTable("QuarterlyPlanSuppliers");
                 });
 
             modelBuilder.Entity("Retail.Domain.Entities.StoreItem", b =>
@@ -152,6 +174,25 @@ namespace Retail.Infrastructure.Migrations
                     b.ToTable("SupplierStoreItems");
                 });
 
+            modelBuilder.Entity("QuarterlyPlanSupplier", b =>
+                {
+                    b.HasOne("QuarterlyPlan", "QuarterlyPlan")
+                        .WithMany("QuarterlyPlanSuppliers")
+                        .HasForeignKey("PlanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Retail.Domain.Entities.Supplier", "Supplier")
+                        .WithMany("QuarterlyPlanSuppliers")
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("QuarterlyPlan");
+
+                    b.Navigation("Supplier");
+                });
+
             modelBuilder.Entity("Sale", b =>
                 {
                     b.HasOne("Retail.Domain.Entities.StoreItem", "StoreItem")
@@ -190,6 +231,11 @@ namespace Retail.Infrastructure.Migrations
                     b.Navigation("Supplier");
                 });
 
+            modelBuilder.Entity("QuarterlyPlan", b =>
+                {
+                    b.Navigation("QuarterlyPlanSuppliers");
+                });
+
             modelBuilder.Entity("Retail.Domain.Entities.StoreItem", b =>
                 {
                     b.Navigation("Sales");
@@ -199,6 +245,8 @@ namespace Retail.Infrastructure.Migrations
 
             modelBuilder.Entity("Retail.Domain.Entities.Supplier", b =>
                 {
+                    b.Navigation("QuarterlyPlanSuppliers");
+
                     b.Navigation("Sales");
 
                     b.Navigation("SupplierStoreItems");

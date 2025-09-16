@@ -16,7 +16,7 @@ namespace Retail.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<StoreItemDto>>> GetStoreItems()
+        public async Task<ActionResult<IEnumerable<StoreItemDto>>> GetAllStoreItems()
         {
             var items = await _storeItemService.GetAllAsync();
             return Ok(items);
@@ -25,16 +25,16 @@ namespace Retail.Api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<StoreItemDto>> GetStoreItem(int id)
         {
-            var dto = await _storeItemService.GetByIdAsync(id);
-            if (dto == null) return NotFound();
-            return Ok(dto);
+            var storeItem = await _storeItemService.GetByIdAsync(id);
+            if (storeItem == null) return NotFound();
+            return Ok(storeItem);
         }
 
         [HttpPost]
         public async Task<ActionResult<StoreItemDto>> CreateStoreItem(StoreItemCreateDto dto)
         {
             var created = await _storeItemService.CreateAsync(dto);
-            return CreatedAtAction(nameof(GetStoreItem), new { id = created.Id }, created);
+            return Ok(created);
         }
 
         [HttpPut("{id}")]

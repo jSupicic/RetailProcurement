@@ -12,9 +12,8 @@ namespace Retail.Domain.Entities
         public string? Address { get; set; }
 
         // Relationships
-        public virtual ICollection<SupplierStoreItem>? SupplierStoreItems { get; set; }
-        public virtual ICollection<Sale>? Sales { get; set; }
-        public virtual ICollection<QuarterlyPlanSupplier>? QuarterlyPlanSuppliers { get; set; }
+        public virtual ICollection<SupplierStoreItem> SupplierStoreItems { get; set; } = new List<SupplierStoreItem>();
+        public virtual ICollection<Sale> Sales { get; set; } = new List<Sale>();
     }
 
 }

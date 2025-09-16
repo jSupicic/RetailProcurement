@@ -29,6 +29,7 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 // Register services / repositories
 builder.Services.AddScoped<IStoreItemService, StoreItemService>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
+builder.Services.AddScoped<IStatisticsService, StatisticsService>();
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 

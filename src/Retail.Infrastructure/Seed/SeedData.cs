@@ -79,31 +79,12 @@ public static class SeedData
 
         var quarterlyPlans = quarterlyPlanFaker.Generate(3);
 
-        // 6️⃣ QuarterlyPlanSuppliers (assign 1–3 suppliers per plan)
-        var quarterlyPlanSuppliers = new List<QuarterlyPlanSupplier>();
-        foreach (var plan in quarterlyPlans)
-        {
-            var planSuppliers = suppliers.OrderBy(x => random.Next()).Take(random.Next(1, 4));
-            foreach (var supplier in planSuppliers)
-            {
-                var qps = new QuarterlyPlanSupplier
-                {
-                    QuarterlyPlan = plan,
-                    Supplier = supplier
-                };
-                plan.QuarterlyPlanSuppliers.Add(qps);
-                supplier.QuarterlyPlanSuppliers.Add(qps);
-                quarterlyPlanSuppliers.Add(qps);
-            }
-        }
-
         // 7️⃣ Add all to DbContext
         context.StoreItems.AddRange(storeItems);
         context.Suppliers.AddRange(suppliers);
         context.SupplierStoreItems.AddRange(supplierStoreItems);
         context.Sales.AddRange(sales);
         context.QuarterlyPlans.AddRange(quarterlyPlans);
-        context.QuarterlyPlanSuppliers.AddRange(quarterlyPlanSuppliers);
 
         // 8️⃣ Save to database
         context.SaveChanges();

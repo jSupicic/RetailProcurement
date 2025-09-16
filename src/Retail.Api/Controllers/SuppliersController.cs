@@ -16,14 +16,14 @@ namespace Retail.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<SupplierDto>>> GetAll()
+        public async Task<ActionResult<IEnumerable<SupplierDto>>> GetAllSuppliers()
         {
             var suppliers = await _supplierService.GetAllAsync();
             return Ok(suppliers);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<SupplierDto>> GetById(int id)
+        public async Task<ActionResult<SupplierDto>> GetSupplierById(int id)
         {
             var supplier = await _supplierService.GetByIdAsync(id);
             if (supplier == null) return NotFound();
@@ -31,14 +31,14 @@ namespace Retail.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<SupplierDto>> Create(SupplierCreateDto dto)
+        public async Task<ActionResult<SupplierDto>> CreateSupplier(SupplierCreateDto dto)
         {
             var created = await _supplierService.CreateAsync(dto);
-            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+            return Ok(created);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, SupplierUpdateDto dto)
+        public async Task<IActionResult> UpdateSupplier(int id, SupplierUpdateDto dto)
         {
             var success = await _supplierService.UpdateAsync(id, dto);
             if (!success) return NotFound();
@@ -46,7 +46,7 @@ namespace Retail.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> DeleteSupplier(int id)
         {
             var success = await _supplierService.DeleteAsync(id);
             if (!success) return NotFound();

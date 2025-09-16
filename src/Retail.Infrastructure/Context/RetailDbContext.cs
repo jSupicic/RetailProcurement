@@ -12,10 +12,13 @@ namespace Retail.Infrastructure.Context
         public DbSet<SupplierStoreItem> SupplierStoreItems { get; set; }
         public DbSet<Sale> Sales { get; set; }
         public DbSet<QuarterlyPlan> QuarterlyPlans { get; set; }
-        public DbSet<QuarterlyPlanSupplier> QuarterlyPlanSuppliers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<StoreItem>()
+                .Property(s => s.Price)
+                .HasColumnType("numeric(9,2)");
+
             // SupplierStoreItems (many-to-many join table)
             modelBuilder.Entity<SupplierStoreItem>()
                 .HasKey(ssi => new { ssi.SupplierId, ssi.StoreItemId });
@@ -41,19 +44,9 @@ namespace Retail.Infrastructure.Context
                 .WithMany(sp => sp.Sales)
                 .HasForeignKey(s => s.SupplierId);
 
-            // QuarterlyPlanSuppliers (many-to-many join table)
-            modelBuilder.Entity<QuarterlyPlanSupplier>()
-                .HasKey(qps => new { qps.PlanId, qps.SupplierId });
-
-            modelBuilder.Entity<QuarterlyPlanSupplier>()
-                .HasOne(qps => qps.QuarterlyPlan)
-                .WithMany(qp => qp.QuarterlyPlanSuppliers)
-                .HasForeignKey(qps => qps.PlanId);
-
-            modelBuilder.Entity<QuarterlyPlanSupplier>()
-                .HasOne(qps => qps.Supplier)
-                .WithMany(s => s.QuarterlyPlanSuppliers)
-                .HasForeignKey(qps => qps.SupplierId);
+            modelBuilder.Entity<QuarterlyPlan>()
+                .HasIndex(qp => new { qp.Year, qp.Quarter })
+                .IsUnique();
         }
     }
 }

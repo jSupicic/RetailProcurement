@@ -13,7 +13,7 @@ public class MappingProfile : Profile
                 src.SupplierStoreItems.Select(ssi => new SupplierStoreItemDto
                 {
                     Name = ssi.Supplier.Name,
-                    Price = ssi.SupplierPrice
+                    Price = ssi.SupplierPrice,
                 }).ToList()
             ));
 
@@ -44,5 +44,24 @@ public class MappingProfile : Profile
         CreateMap<SupplierUpdateDto, Supplier>()
             .ForAllMembers(opt =>
                 opt.Condition((src, dest, srcMember) => srcMember != null));
+
+        // Supplier → SupplierStatisticDto (with custom calculations)
+        CreateMap<Supplier, SupplierStatisticDto>()
+            .ForMember(dest => dest.SupplierId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.SupplierName, opt => opt.MapFrom(src => src.Name))
+            .ForMember(dest => dest.TotalItemsSold, opt => opt.MapFrom(src => src.Sales.Sum(s => s.Quantity)))
+            .ForMember(dest => dest.TotalEarnings, opt => opt.MapFrom(src => src.Sales.Sum(s => s.Quantity * s.StoreItem.Price)));
+
+        // SupplierStoreItem → BestOfferDto
+        CreateMap<SupplierStoreItem, SupplierBestOfferDto>()
+            .ForMember(dest => dest.StoreItemName, opt => opt.MapFrom(src => src.StoreItem.Name))
+            .ForMember(dest => dest.StoreItemPrice, opt => opt.MapFrom(src => src.SupplierPrice))
+            .ForMember(dest => dest.SupplierName, opt => opt.MapFrom(src => src.Supplier.Name));
+
+        // QuarterlyPlan → QuarterlyPlanDto
+        CreateMap<QuarterlyPlan, QuarterlyPlanDto>();
+
+        CreateMap<QuarterlyPlanCreateDto, QuarterlyPlan>()
+            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow));
     }
 }
