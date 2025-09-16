@@ -7,7 +7,7 @@
         public string? Description { get; set; }
         public int StockQuantity { get; set; }
 
-        public List<SupplierStoreItemDto>? Suppliers { get; set; }
+        public List<FromSupplierDto>? Suppliers { get; set; }
     }
 
     public class StoreItemCreateDto
@@ -21,7 +21,7 @@
 
     public class StoreItemUpdateDto : StoreItemCreateDto { }
 
-    public class SupplierStoreItemDto
+    public class FromSupplierDto
     {
         public required string Name { get; set; }
         public decimal Price { get; set; }

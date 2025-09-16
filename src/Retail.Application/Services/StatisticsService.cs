@@ -51,8 +51,9 @@ namespace Retail.Application.Services
                 .GetAllAsync().Result
                 .Select(x => x.Id);
 
-            //filter non-existent suppliers
-            dto.SupplierIds.Where(id => allSupplierIds.Contains(id))
+            //filter non-existent and double suppliers
+            dto.SupplierIds = dto.SupplierIds.Where(id => allSupplierIds.Contains(id))
+                .Distinct()
                 .Order()
                 .ToArray();
 

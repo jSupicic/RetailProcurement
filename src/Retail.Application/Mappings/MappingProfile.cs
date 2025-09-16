@@ -10,7 +10,7 @@ public class MappingProfile : Profile
         // Entity -> DTO
         CreateMap<StoreItem, StoreItemDto>()
             .ForMember(dest => dest.Suppliers, opt => opt.MapFrom(src =>
-                src.SupplierStoreItems.Select(ssi => new SupplierStoreItemDto
+                src.SupplierStoreItems.Select(ssi => new FromSupplierDto
                 {
                     Name = ssi.Supplier.Name,
                     Price = ssi.SupplierPrice,
@@ -63,5 +63,12 @@ public class MappingProfile : Profile
 
         CreateMap<QuarterlyPlanCreateDto, QuarterlyPlan>()
             .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow));
+
+
+        CreateMap<SupplierStoreItem, SupplierStoreItemDto>()
+            .ForMember(dest => dest.SupplierName, opt => opt.MapFrom(src => src.Supplier.Name))
+            .ForMember(dest => dest.StoreItemName, opt => opt.MapFrom(src => src.StoreItem.Name));
+
+        CreateMap<SupplierStoreItemCreateDto, SupplierStoreItem>();
     }
 }
