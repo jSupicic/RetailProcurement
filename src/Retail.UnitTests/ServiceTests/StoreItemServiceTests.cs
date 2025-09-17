@@ -7,7 +7,7 @@ using Retail.Infrastructure.Repositories;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Retail.Tests.ServiceTests
+namespace Retail.UnitTests.ServiceTests
 {
     public class StoreItemServiceTests : TestBase
     {
@@ -144,7 +144,7 @@ namespace Retail.Tests.ServiceTests
         {
             _storeItemMockRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync((StoreItem?)null);
 
-            var result = await _service.UpdateAsync(1, new StoreItemUpdateDto { Name = "Updated" });
+            var result = await _service.UpdateAsync(1, new StoreItemUpdateDto { Name = "Updated", StockQuantity = 32 });
 
             Assert.False(result);
         }

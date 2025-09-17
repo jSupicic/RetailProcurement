@@ -14,9 +14,7 @@
     {
         public required string Name { get; set; }
         public string? Description { get; set; }
-        public required decimal Price { get; set; }
-        public required string Supplier { get; set; }
-        public int? StockQuantity { get; set; }
+        public required int? StockQuantity { get; set; }
     }
 
     public class StoreItemUpdateDto : StoreItemCreateDto { }
@@ -24,6 +22,6 @@
     public class FromSupplierDto
     {
         public required string Name { get; set; }
-        public decimal Price { get; set; }
+        public required decimal Price { get; set; }
     }
 }

@@ -12,8 +12,8 @@
 
     public class SupplierStoreItemCreateDto
     {
-        public int SupplierId { get; set; }
-        public int StoreItemId { get; set; }
-        public decimal SupplierPrice { get; set; }
+        public required int SupplierId { get; set; }
+        public required int StoreItemId { get; set; }
+        public required decimal SupplierPrice { get; set; }
     }
 }

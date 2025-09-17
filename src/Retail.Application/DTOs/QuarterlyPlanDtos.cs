@@ -2,8 +2,8 @@
 {
     public class QuarterlyPlanDto
     {
-        public int Year { get; set; }
-        public int Quarter { get; set; }
+        public required int Year { get; set; }
+        public required int Quarter { get; set; }
         public required int[] SupplierIds { get; set; }
     }
     public class QuarterlyPlanCreateDto : QuarterlyPlanDto { }

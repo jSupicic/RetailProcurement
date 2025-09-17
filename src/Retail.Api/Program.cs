@@ -30,6 +30,7 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddScoped<IStoreItemService, StoreItemService>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
+builder.Services.AddScoped<ISupplierStoreItemService, SupplierStoreItemService>();
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
@@ -45,10 +46,12 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<RetailDbContext>();
     db.Database.Migrate(); // Apply migrations
-    SeedData.SeedDatabase(db);
+    //SeedData.SeedDatabase(db);
 }
 
 
 app.UseHttpsRedirection();
 app.MapControllers();
 app.Run();
+
+public partial class Program { } // For integration testing

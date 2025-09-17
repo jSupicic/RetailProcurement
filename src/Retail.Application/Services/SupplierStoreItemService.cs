@@ -25,6 +25,13 @@ namespace Retail.Application.Services
 
         public async Task<SupplierStoreItemDto?> CreateAsync(SupplierStoreItemCreateDto dto)
         {
+            var existing = _supplierStoreItemRepository
+                .FindAsync(ssi => ssi.SupplierId == dto.SupplierId && ssi.StoreItemId == dto.StoreItemId)
+                .Result
+                .FirstOrDefault();
+
+            if (existing is not null) throw new Exception("The supplier already offers this item.");
+
             var entity = _mapper.Map<SupplierStoreItem>(dto);
 
             await _supplierStoreItemRepository.AddAsync(entity);

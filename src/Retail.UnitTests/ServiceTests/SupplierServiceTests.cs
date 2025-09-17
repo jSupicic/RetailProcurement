@@ -6,7 +6,7 @@ using Retail.Domain.Entities;
 using Retail.Infrastructure.Repositories;
 using Xunit;
 
-namespace Retail.Tests.ServiceTests
+namespace Retail.UnitTests.ServiceTests
 {
     public class SupplierServiceTests : TestBase
     {

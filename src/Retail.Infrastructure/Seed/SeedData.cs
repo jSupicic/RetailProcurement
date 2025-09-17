@@ -42,7 +42,7 @@ public static class SeedData
         var supplierStoreItems = new List<SupplierStoreItem>();
         foreach (var supplier in suppliers)
         {
-            var items = storeItems.OrderBy(x => random.Next()).Take(random.Next(2, 6));
+            var items = storeItems.OrderBy(x => random.Next()).Take(random.Next(6, 10));
             foreach (var item in items)
             {
                 var ssi = new SupplierStoreItem
@@ -77,7 +77,7 @@ public static class SeedData
             .RuleFor(q => q.Quarter, f => f.Random.Int(1, 4))
             .RuleFor(q => q.CreatedAt, f => f.Date.Recent(60).ToUniversalTime());
 
-        var quarterlyPlans = quarterlyPlanFaker.Generate(3);
+        var quarterlyPlans = quarterlyPlanFaker.Generate(5);
 
         // 7️⃣ Add all to DbContext
         context.StoreItems.AddRange(storeItems);
