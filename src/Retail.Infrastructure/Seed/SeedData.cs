@@ -20,29 +20,39 @@ public static class SeedData
 
         var random = new Random();
 
-        // 1️⃣ Generate StoreItems
+        // Generate StoreItems
         var storeItemFaker = new Faker<StoreItem>()
             .RuleFor(s => s.Name, f => f.Commerce.ProductName())
             .RuleFor(s => s.Description, f => f.Commerce.ProductDescription())
             .RuleFor(s => s.Price, f => f.Random.Decimal(10, 500))
-            .RuleFor(s => s.StockQuantity, f => f.Random.Int(1, 100));
+            .RuleFor(s => s.StockQuantity, f => f.Random.Int(1, 100))
+            .FinishWith((f, s) =>
+            {
+                s.SupplierStoreItems = new List<SupplierStoreItem>();
+                s.Sales = new List<Sale>();
+            });
 
         var storeItems = storeItemFaker.Generate(10);
 
-        // 2️⃣ Generate Suppliers
+        // Generate Suppliers
         var supplierFaker = new Faker<Supplier>()
             .RuleFor(s => s.Name, f => f.Company.CompanyName())
             .RuleFor(s => s.Email, f => f.Internet.Email())
             .RuleFor(s => s.Phone, f => f.Phone.PhoneNumber())
-            .RuleFor(s => s.Address, f => f.Address.FullAddress());
+            .RuleFor(s => s.Address, f => f.Address.FullAddress())
+            .FinishWith((f, s) =>
+            {
+                s.SupplierStoreItems = new List<SupplierStoreItem>();
+                s.Sales = new List<Sale>();
+            });
 
         var suppliers = supplierFaker.Generate(5);
 
-        // 3️⃣ Generate SupplierStoreItems (many-to-many)
+        // Generate SupplierStoreItems (many-to-many)
         var supplierStoreItems = new List<SupplierStoreItem>();
         foreach (var supplier in suppliers)
         {
-            var items = storeItems.OrderBy(x => random.Next()).Take(random.Next(6, 10));
+            var items = storeItems.OrderBy(x => random.Next()).Take(random.Next(6, 10)).ToList();
             foreach (var item in items)
             {
                 var ssi = new SupplierStoreItem
@@ -57,7 +67,7 @@ public static class SeedData
             }
         }
 
-        // 4️⃣ Generate Sales
+        // Generate Sales
         var saleFaker = new Faker<Sale>()
             .RuleFor(s => s.Quantity, f => f.Random.Int(1, 10))
             .RuleFor(s => s.SaleDate, f => f.Date.Recent(30).ToUniversalTime())
@@ -71,22 +81,47 @@ public static class SeedData
             sale.Supplier.Sales.Add(sale);
         }
 
-        // 5️⃣ Generate QuarterlyPlans
-        var quarterlyPlanFaker = new Faker<QuarterlyPlan>()
-            .RuleFor(q => q.Year, f => f.Date.Past(2).Year)
-            .RuleFor(q => q.Quarter, f => f.Random.Int(1, 4))
-            .RuleFor(q => q.CreatedAt, f => f.Date.Recent(60).ToUniversalTime());
+        // Generate QuarterlyPlans with valid QuarterlyPlanSupplier links
+        var quarterlyPlans = new List<QuarterlyPlan>();
+        var quarterlyPlanSuppliers = new List<QuarterlyPlanSupplier>();
+        for (int i = 0; i < 8; i++)
+        {
+            var year = DateTime.UtcNow.Year - i / 4;
+            var quarter = (i % 4) + 1;
+            var plan = new QuarterlyPlan
+            {
+                Year = year,
+                Quarter = quarter,
+                CreatedAt = DateTime.UtcNow.AddDays(-random.Next(0, 60)),
+                Suppliers = new List<QuarterlyPlanSupplier>()
+            };
 
-        var quarterlyPlans = quarterlyPlanFaker.Generate(5);
+            // Assign 1-3 random suppliers to this plan
+            var planSuppliers = suppliers.OrderBy(_ => random.Next()).Take(random.Next(1, Math.Min(4, suppliers.Count) + 1)).ToList();
+            foreach (var supplier in planSuppliers)
+            {
+                var qps = new QuarterlyPlanSupplier
+                {
+                    QuarterlyPlan = plan,
+                    Supplier = supplier
+                };
+                plan.Suppliers.Add(qps);
+                supplier.QuarterlyPlans.Add(qps);
+                quarterlyPlanSuppliers.Add(qps);
+            }
 
-        // 7️⃣ Add all to DbContext
+            quarterlyPlans.Add(plan);
+        }
+
+        // Add all to DbContext
         context.StoreItems.AddRange(storeItems);
         context.Suppliers.AddRange(suppliers);
         context.SupplierStoreItems.AddRange(supplierStoreItems);
         context.Sales.AddRange(sales);
         context.QuarterlyPlans.AddRange(quarterlyPlans);
+        context.AddRange(quarterlyPlanSuppliers); // Add this line
 
-        // 8️⃣ Save to database
+        // Save to database
         context.SaveChanges();
 
         Console.WriteLine("Database seeded successfully!");

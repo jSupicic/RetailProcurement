@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Retail.Application.DTOs;
+using Retail.Domain.Entities;
 using Retail.Infrastructure.Repositories;
 
 namespace Retail.Application.Services

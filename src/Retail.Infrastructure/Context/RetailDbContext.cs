@@ -47,6 +47,10 @@ namespace Retail.Infrastructure.Context
             modelBuilder.Entity<QuarterlyPlan>()
                 .HasIndex(qp => new { qp.Year, qp.Quarter })
                 .IsUnique();
+
+            // QuarterlyPlanSupplier (many-to-many join table)
+            modelBuilder.Entity<QuarterlyPlanSupplier>()
+                .HasKey(qps => new { qps.SupplierId, qps.QuarterlyPlanId });
         }
     }
 }

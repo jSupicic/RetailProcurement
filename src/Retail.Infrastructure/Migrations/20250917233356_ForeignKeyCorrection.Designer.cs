@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Retail.Infrastructure.Context;
@@ -11,9 +12,11 @@ using Retail.Infrastructure.Context;
 namespace Retail.Infrastructure.Migrations
 {
     [DbContext(typeof(RetailDbContext))]
-    partial class RetailDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250917233356_ForeignKeyCorrection")]
+    partial class ForeignKeyCorrection
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,21 +51,6 @@ namespace Retail.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("QuarterlyPlans");
-                });
-
-            modelBuilder.Entity("Retail.Domain.Entities.QuarterlyPlanSupplier", b =>
-                {
-                    b.Property<int>("SupplierId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("QuarterlyPlanId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("SupplierId", "QuarterlyPlanId");
-
-                    b.HasIndex("QuarterlyPlanId");
-
-                    b.ToTable("QuarterlyPlanSupplier");
                 });
 
             modelBuilder.Entity("Retail.Domain.Entities.StoreItem", b =>
@@ -111,27 +99,14 @@ namespace Retail.Infrastructure.Migrations
                     b.Property<string>("Phone")
                         .HasColumnType("text");
 
+                    b.Property<int?>("QuarterlyPlanId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("QuarterlyPlanId");
+
                     b.ToTable("Suppliers");
-                });
-
-            modelBuilder.Entity("Retail.Domain.Entities.SupplierStoreItem", b =>
-                {
-                    b.Property<int>("SupplierId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("StoreItemId")
-                        .HasColumnType("integer");
-
-                    b.Property<decimal>("SupplierPrice")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("SupplierId", "StoreItemId");
-
-                    b.HasIndex("StoreItemId");
-
-                    b.ToTable("SupplierStoreItems");
                 });
 
             modelBuilder.Entity("Sale", b =>
@@ -163,42 +138,29 @@ namespace Retail.Infrastructure.Migrations
                     b.ToTable("Sales");
                 });
 
-            modelBuilder.Entity("Retail.Domain.Entities.QuarterlyPlanSupplier", b =>
+            modelBuilder.Entity("SupplierStoreItem", b =>
                 {
-                    b.HasOne("QuarterlyPlan", "QuarterlyPlan")
-                        .WithMany("Suppliers")
-                        .HasForeignKey("QuarterlyPlanId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Property<int>("SupplierId")
+                        .HasColumnType("integer");
 
-                    b.HasOne("Retail.Domain.Entities.Supplier", "Supplier")
-                        .WithMany("QuarterlyPlans")
-                        .HasForeignKey("SupplierId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Property<int>("StoreItemId")
+                        .HasColumnType("integer");
 
-                    b.Navigation("QuarterlyPlan");
+                    b.Property<decimal>("SupplierPrice")
+                        .HasColumnType("numeric");
 
-                    b.Navigation("Supplier");
+                    b.HasKey("SupplierId", "StoreItemId");
+
+                    b.HasIndex("StoreItemId");
+
+                    b.ToTable("SupplierStoreItems");
                 });
 
-            modelBuilder.Entity("Retail.Domain.Entities.SupplierStoreItem", b =>
+            modelBuilder.Entity("Retail.Domain.Entities.Supplier", b =>
                 {
-                    b.HasOne("Retail.Domain.Entities.StoreItem", "StoreItem")
-                        .WithMany("SupplierStoreItems")
-                        .HasForeignKey("StoreItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Retail.Domain.Entities.Supplier", "Supplier")
-                        .WithMany("SupplierStoreItems")
-                        .HasForeignKey("SupplierId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("StoreItem");
-
-                    b.Navigation("Supplier");
+                    b.HasOne("QuarterlyPlan", null)
+                        .WithMany("Suppliers")
+                        .HasForeignKey("QuarterlyPlanId");
                 });
 
             modelBuilder.Entity("Sale", b =>
@@ -211,6 +173,25 @@ namespace Retail.Infrastructure.Migrations
 
                     b.HasOne("Retail.Domain.Entities.Supplier", "Supplier")
                         .WithMany("Sales")
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("StoreItem");
+
+                    b.Navigation("Supplier");
+                });
+
+            modelBuilder.Entity("SupplierStoreItem", b =>
+                {
+                    b.HasOne("Retail.Domain.Entities.StoreItem", "StoreItem")
+                        .WithMany("SupplierStoreItems")
+                        .HasForeignKey("StoreItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Retail.Domain.Entities.Supplier", "Supplier")
+                        .WithMany("SupplierStoreItems")
                         .HasForeignKey("SupplierId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -234,8 +215,6 @@ namespace Retail.Infrastructure.Migrations
 
             modelBuilder.Entity("Retail.Domain.Entities.Supplier", b =>
                 {
-                    b.Navigation("QuarterlyPlans");
-
                     b.Navigation("Sales");
 
                     b.Navigation("SupplierStoreItems");

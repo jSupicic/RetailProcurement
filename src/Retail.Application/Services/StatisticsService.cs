@@ -57,6 +57,8 @@ namespace Retail.Application.Services
                 .Order()
                 .ToArray();
 
+            if (!dto.SupplierIds.Any()) throw new Exception("There are no suppliers with selected Id");
+
             var existing = _quarterlyPlanRepository
                 .FindAsync(x => x.Quarter == dto.Quarter && x.Year == dto.Year).Result
                 .FirstOrDefault();
@@ -85,12 +87,9 @@ namespace Retail.Application.Services
             var currentPlan = plans.FirstOrDefault(p => p.Year == now.Year && p.Quarter == quarter);
 
             if (currentPlan == null) return null;
-
-            var supliers = await _supplierRepository
-                .FindAsync(s => currentPlan.SupplierIds.Contains(s.Id));
-
-
-            return _mapper.Map<List<SupplierDto>>(supliers);
+            
+            var suppliers = currentPlan.Suppliers.Select(x => x.Supplier);
+            return _mapper.Map<List<SupplierDto>>(suppliers);
         }
     }
 }

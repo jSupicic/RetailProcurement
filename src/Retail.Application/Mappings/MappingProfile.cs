@@ -7,7 +7,7 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        // Entity -> DTO
+        // StoreItem: Entity -> DTO
         CreateMap<StoreItem, StoreItemDto>()
             .ForMember(dest => dest.Suppliers, opt => opt.MapFrom(src =>
                 src.SupplierStoreItems.Select(ssi => new FromSupplierDto
@@ -17,13 +17,13 @@ public class MappingProfile : Profile
                 }).ToList()
             ));
 
-        // DTO -> Entity
+        // StoreItem: DTO -> Entity
         CreateMap<StoreItemCreateDto, StoreItem>();
 
         CreateMap<StoreItemUpdateDto, StoreItem>()
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
-        // Supplier -> SupplierDto
+        // Supplier: Entity -> DTO
         CreateMap<Supplier, SupplierDto>()
             .ForMember(dest => dest.StoreItems, opt =>
             {
@@ -39,13 +39,23 @@ public class MappingProfile : Profile
                 );
             });
 
-        // DTO -> Entity
+        // Supplier: DTO -> Entity
         CreateMap<SupplierCreateDto, Supplier>();
         CreateMap<SupplierUpdateDto, Supplier>()
             .ForAllMembers(opt =>
                 opt.Condition((src, dest, srcMember) => srcMember != null));
 
-        // Supplier → SupplierStatisticDto (with custom calculations)
+        // SupplierStoreItem: Entity -> DTO
+        CreateMap<SupplierStoreItem, SupplierStoreItemDto>()
+            .ForMember(dest => dest.SupplierName, opt => opt.MapFrom(src => src.Supplier.Name))
+            .ForMember(dest => dest.StoreItemName, opt => opt.MapFrom(src => src.StoreItem.Name));
+
+        // SupplierStoreItem: DTO -> Entity
+        CreateMap<SupplierStoreItemCreateDto, SupplierStoreItem>();
+
+
+        //Statistics
+        // Supplier → SupplierStatisticDto
         CreateMap<Supplier, SupplierStatisticDto>()
             .ForMember(dest => dest.SupplierId, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.SupplierName, opt => opt.MapFrom(src => src.Name))
@@ -58,17 +68,14 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.StoreItemPrice, opt => opt.MapFrom(src => src.SupplierPrice))
             .ForMember(dest => dest.SupplierName, opt => opt.MapFrom(src => src.Supplier.Name));
 
-        // QuarterlyPlan → QuarterlyPlanDto
-        CreateMap<QuarterlyPlan, QuarterlyPlanDto>();
+        // QuarterlyPlan: Entity -> DTO
+        CreateMap<QuarterlyPlan, QuarterlyPlanDto>()
+            .ForMember(dest => dest.SupplierIds, opt => opt.MapFrom(src => src.Suppliers.Select(s => s.SupplierId).ToArray()));
 
+        // QuarterlyPlan: DTO -> Entity
         CreateMap<QuarterlyPlanCreateDto, QuarterlyPlan>()
-            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow));
-
-
-        CreateMap<SupplierStoreItem, SupplierStoreItemDto>()
-            .ForMember(dest => dest.SupplierName, opt => opt.MapFrom(src => src.Supplier.Name))
-            .ForMember(dest => dest.StoreItemName, opt => opt.MapFrom(src => src.StoreItem.Name));
-
-        CreateMap<SupplierStoreItemCreateDto, SupplierStoreItem>();
+            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
+            .ForMember(dest => dest.Suppliers, opt => opt.MapFrom(src =>
+                src.SupplierIds.Select(id => new QuarterlyPlanSupplier { SupplierId = id })));
     }
 }

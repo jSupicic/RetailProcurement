@@ -46,7 +46,7 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<RetailDbContext>();
     db.Database.Migrate(); // Apply migrations
-    //SeedData.SeedDatabase(db);
+    SeedData.SeedDatabase(db);
 }
 
 
