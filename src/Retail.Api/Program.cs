@@ -15,7 +15,17 @@ builder.Services.AddOpenApi();
 // Add services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+
+    // Optional: Customize Swagger info
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "Retail Procurement System API",
+        Version = "v1",
+        Description = "API for managing store items, suppliers, and procurement statistics."
+    });
+});
 
 // EF Core: configure connection string (replace with your local)
 var conn = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -40,7 +50,10 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Retail API V1");
+    });
 }
 using (var scope = app.Services.CreateScope())
 {
