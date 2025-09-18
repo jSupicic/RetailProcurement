@@ -5,6 +5,8 @@ using Bogus;
 using Retail.Infrastructure.Seed;
 using Retail.Infrastructure.Repositories;
 using Retail.Application.Mappings;
+using Microsoft.AspNetCore.SignalR;
+using Retail.Api.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +29,17 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+// SignalR + CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy", b => b
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials()
+        .SetIsOriginAllowed(_ => true)); // permissive for development
+});
+builder.Services.AddSignalR();
+
 // EF Core: configure connection string (replace with your local)
 var conn = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<RetailDbContext>(opt => opt
@@ -43,7 +56,6 @@ builder.Services.AddScoped<IStatisticsService, StatisticsService>();
 builder.Services.AddScoped<ISupplierStoreItemService, SupplierStoreItemService>();
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-
 
 var app = builder.Build();
 
@@ -62,9 +74,13 @@ using (var scope = app.Services.CreateScope())
     SeedData.SeedDatabase(db);
 }
 
-
+app.UseCors("CorsPolicy");
 app.UseHttpsRedirection();
 app.MapControllers();
+
+// SignalR endpoints
+app.MapHub<NotificationHub>("/hubs/notifications");
+
 app.Run();
 
 public partial class Program { } // For integration testing
