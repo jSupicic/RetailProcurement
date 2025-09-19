@@ -1,7 +1,4 @@
-using Bogus;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Retail.Api.Hubs;
 using Retail.Application.Mappings;
 using Retail.Application.Services;
 using Retail.Infrastructure.Context;
@@ -82,9 +79,6 @@ using (var scope = app.Services.CreateScope())
 app.UseCors("CorsPolicy");
 app.UseHttpsRedirection();
 app.MapControllers();
-
-// SignalR endpoints
-app.MapHub<NotificationHub>("/hubs/notifications");
 
 app.Run();
 

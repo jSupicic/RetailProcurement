@@ -2,7 +2,6 @@
 using Retail.Application.DTOs;
 using Retail.Application.Services;
 using Microsoft.AspNetCore.SignalR;
-using Retail.Api.Hubs;
 
 namespace Retail.Api.Controllers
 {
@@ -11,12 +10,10 @@ namespace Retail.Api.Controllers
     public class SuppliersController : ControllerBase
     {
         private readonly ISupplierService _supplierService;
-        private readonly IHubContext<NotificationHub> _hubContext;
 
-        public SuppliersController(ISupplierService supplierService, IHubContext<NotificationHub> hubContext)
+        public SuppliersController(ISupplierService supplierService)
         {
             _supplierService = supplierService;
-            _hubContext = hubContext;
         }
 
         /// <summary>
@@ -60,7 +57,6 @@ namespace Retail.Api.Controllers
         public async Task<ActionResult<SupplierDto>> CreateSupplier(SupplierCreateDto dto)
         {
             var created = await _supplierService.CreateAsync(dto);
-            await _hubContext.Clients.All.SendAsync("SupplierCreated", created);
             return Ok(created);
         }
 
@@ -80,7 +76,6 @@ namespace Retail.Api.Controllers
             var updated = await _supplierService.UpdateAsync(id, dto);
             if (updated is null) return NotFound();
 
-            await _hubContext.Clients.All.SendAsync("SupplierUpdated", updated);
             return Ok(updated);
         }
 
@@ -97,8 +92,8 @@ namespace Retail.Api.Controllers
         public async Task<IActionResult> DeleteSupplier(int id)
         {
             var success = await _supplierService.DeleteAsync(id);
+            
             if (!success) return NotFound();
-            await _hubContext.Clients.All.SendAsync("SupplierDeleted", id);
             return NoContent();
         }
     }

@@ -2,7 +2,6 @@
 using Retail.Application.DTOs;
 using Retail.Application.Services;
 using Microsoft.AspNetCore.SignalR;
-using Retail.Api.Hubs;
 
 namespace Retail.Api.Controllers
 {
@@ -11,12 +10,10 @@ namespace Retail.Api.Controllers
     public class StatisticsController : ControllerBase
     {
         private readonly IStatisticsService _statisticsService;
-        private readonly IHubContext<NotificationHub> _hubContext;
 
-        public StatisticsController(IStatisticsService statisticsService, IHubContext<NotificationHub> hubContext)
+        public StatisticsController(IStatisticsService statisticsService)
         {
             _statisticsService = statisticsService;
-            _hubContext = hubContext;
         }
 
         /// <summary>
@@ -67,9 +64,6 @@ namespace Retail.Api.Controllers
         {
             var success = await _statisticsService.CreateQuarterlyPlanAsync(dto);
             if (!success) return BadRequest();
-
-            // notify clients about new/updated quarterly plan
-            await _hubContext.Clients.All.SendAsync("QuarterlyPlanCreatedOrUpdated", dto);
 
             return Ok();
         }
