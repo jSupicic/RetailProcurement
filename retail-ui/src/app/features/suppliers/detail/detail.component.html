@@ -1,0 +1,10 @@
+<ng-container *ngIf="supplier; else loading">
+  <h2>{{ supplier.name }}</h2>
+  <p *ngIf="supplier.email">{{ supplier.email }}</p>
+  <h3>Supplier Statistics</h3>
+  <p *ngIf="supplierStats?.totalItemsSold">Total Quantity of Items Sold: {{ supplierStats?.totalItemsSold }}</p>
+  <p *ngIf="supplierStats?.totalEarnings">Total earnings: {{ supplierStats?.totalEarnings }} €</p>
+</ng-container>
+<ng-template #loading>
+  <p>Loading...</p>
+</ng-template>

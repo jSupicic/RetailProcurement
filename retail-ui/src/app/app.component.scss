@@ -1,0 +1,71 @@
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-ground);
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.app-main {
+  flex: 1;
+  padding: 1rem;
+  background: var(--surface-ground);
+}
+
+.content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.app-footer {
+  margin-top: auto;
+}
+
+// Override PrimeNG menubar styles for better integration
+:host ::ng-deep .p-menubar {
+  .p-menubar-root-list {
+    .p-menuitem-link {
+      color: white !important;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+        color: white !important;
+      }
+    }
+    
+    .p-submenu-list {
+      background: white;
+      border: 1px solid var(--surface-200);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      border-radius: 8px;
+      
+      .p-menuitem-link {
+        color: var(--text-color) !important;
+        
+        &:hover {
+          background: var(--surface-100) !important;
+          color: var(--text-color) !important;
+        }
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .app-main {
+    padding: 0.5rem;
+  }
+  
+  .content-wrapper {
+    padding: 0;
+  }
+}

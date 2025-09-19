@@ -1,0 +1,10 @@
+<ng-container *ngIf="item; else loading">
+  <h2>{{ item.name }}</h2>
+  <p *ngIf="item.description">{{ item.description }}</p>
+  <h3>Best Offer</h3>
+  <p *ngIf="bestOffer?.supplierName">Supplier Name: {{ bestOffer?.supplierName }}</p>
+  <p *ngIf="bestOffer?.storeItemPrice">Price: {{ bestOffer?.storeItemPrice }}</p>
+</ng-container>
+<ng-template #loading>
+  <p>Loading...</p>
+</ng-template>

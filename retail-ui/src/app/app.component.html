@@ -1,0 +1,31 @@
+<div class="app-container">
+  <!-- Header with Navigation -->
+  <header class="app-header">
+    <p-menubar [model]="menuItems" [style]="{'border-radius': '0', 'border': 'none', 'background': 'var(--primary-color)', 'color': 'white'}">
+      <ng-template pTemplate="start">
+        <div class="flex align-items-center gap-2">
+          <i class="pi pi-shopping-cart text-2xl"></i>
+          <span class="text-xl font-bold">{{ title }}</span>
+        </div>
+      </ng-template>
+    </p-menubar>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="app-main">
+    <div class="content-wrapper">
+      <router-outlet />
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <p-card [style]="{'background': 'var(--surface-100)', 'border': 'none', 'border-radius': '0'}">
+      <div class="text-center">
+        <p class="text-sm text-600 m-0">
+          © 2024 Retail Portal. Built with Angular & PrimeNG.
+        </p>
+      </div>
+    </p-card>
+  </footer>
+</div>

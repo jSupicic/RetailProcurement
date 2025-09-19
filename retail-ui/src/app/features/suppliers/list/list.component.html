@@ -1,0 +1,267 @@
+<div class="suppliers-container">
+  <!-- Header Section -->
+  <div class="mb-4">
+    <p-card [style]="{'background': 'linear-gradient(135deg, var(--blue-600), var(--blue-800))', 'color': 'white', 'border': 'none'}">
+      <div class="flex align-items-center justify-content-between">
+        <div>
+          <h1 class="text-3xl font-bold m-0 mb-2">
+            <i class="pi pi-building mr-2"></i>
+            Suppliers
+          </h1>
+          <p class="text-lg m-0 opacity-90">Manage your supplier relationships</p>
+        </div>
+        <div class="text-right">
+          <div class="text-2xl font-bold">{{ filteredSuppliers.length }}</div>
+          <div class="text-sm opacity-90">Total Suppliers</div>
+        </div>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Search and Actions Toolbar -->
+  <p-toolbar>
+    <ng-template pTemplate="left">
+      <div class="flex align-items-center gap-2">
+        <i class="pi pi-search"></i>
+        <input 
+          type="text" 
+          pInputText 
+          placeholder="Search suppliers..." 
+          [(ngModel)]="searchTerm"
+          (input)="onSearch()"
+          class="w-20rem"
+        />
+      </div>
+    </ng-template>
+    <ng-template pTemplate="right">
+      <p-button 
+        label="Add New Supplier" 
+        icon="pi pi-plus" 
+        [style]="{'background': 'var(--blue-600)', 'border': 'none'}"
+        class="custom-button"
+        (onClick)="openAddModal()"
+      />
+    </ng-template>
+  </p-toolbar>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="mt-4">
+    <p-card>
+      <div class="grid">
+        <div class="col-12" *ngFor="let i of [1,2,3,4,5]">
+          <p-skeleton height="4rem" class="mb-2"></p-skeleton>
+        </div>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Suppliers Table -->
+  <div *ngIf="!loading" class="mt-4">
+    <p-card class="custom-card">
+      <p-table 
+        [value]="filteredSuppliers" 
+        [paginator]="true" 
+        [rows]="10"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} suppliers"
+        [rowsPerPageOptions]="[5, 10, 25, 50]"
+        [loading]="loading"
+        styleClass="custom-datatable"
+        [scrollable]="true"
+        scrollHeight="400px"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 3rem">ID</th>
+            <th>Name</th>
+            <th>Contact Info</th>
+            <th>Phone</th>
+            <th style="width: 8rem">Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-supplier>
+          <tr>
+            <td>
+              <p-tag [value]="supplier.id" severity="info" [rounded]="true"></p-tag>
+            </td>
+            <td>
+              <div class="flex align-items-center gap-2">
+                <i class="pi pi-building text-primary"></i>
+                <div>
+                  <div class="font-semibold">{{ supplier.name }}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="flex flex-column gap-1">
+                <div class="flex align-items-center gap-1">
+                  <i class="pi pi-envelope text-sm"></i>
+                  <span class="text-sm">{{ supplier.email || 'No email' }}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="flex flex-column gap-1">
+                <div class="flex align-items-center gap-1">
+                  <i class="pi pi-phone text-sm"></i>
+                  <span class="text-sm">{{ supplier.phone || 'No phone' }}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="flex gap-2">
+                <p-button 
+                  icon="pi pi-eye" 
+                  [text]="true" 
+                  [rounded]="true"
+                  [routerLink]="['/suppliers', supplier.id]"
+                  pTooltip="View Details"
+                />
+                <p-button 
+                  icon="pi pi-pencil" 
+                  [text]="true" 
+                  [rounded]="true"
+                  severity="warning"
+                  pTooltip="Edit Supplier"
+                  (onClick)="openEditModal(supplier)"
+                />
+                <p-button 
+                  icon="pi pi-trash" 
+                  [text]="true" 
+                  [rounded]="true"
+                  severity="danger"
+                  pTooltip="Delete Supplier"
+                  (onClick)="onDelete(supplier.id)"
+                />
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="5" class="text-center py-4">
+              <div class="flex flex-column align-items-center gap-3">
+                <i class="pi pi-search text-4xl text-400"></i>
+                <div class="text-lg text-600">No suppliers found</div>
+                <div class="text-sm text-500">Try adjusting your search criteria</div>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-card>
+  </div>
+
+  <!-- Add Supplier Modal -->
+  <p-dialog 
+    [header]="supplierId === 0 ? 'Add New Supplier' : 'Edit Supplier'" 
+    [(visible)]="showAddModal" 
+    [modal]="true" 
+    [closable]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [style]="{'width': '500px'}"
+    (onHide)="closeAddModal()"
+  >
+    <form [formGroup]="supplierForm" (ngSubmit)="onSubmit()" class="supplier-form">
+      <div class="grid">
+        <!-- Name Field -->
+        <div class="col-12">
+          <div class="field">
+            <label for="name" class="block text-sm font-medium mb-2">
+              <i class="pi pi-building mr-1"></i>
+              Supplier Name *
+            </label>
+            <input 
+              id="name"
+              type="text" 
+              pInputText 
+              formControlName="name"
+              placeholder="Enter supplier name"
+              class="w-full"
+              [class.ng-invalid]="supplierForm.get('name')?.invalid && supplierForm.get('name')?.touched"
+            />
+            <small 
+              *ngIf="getFieldError('name')" 
+              class="text-red-500 text-sm"
+            >
+              {{ getFieldError('name') }}
+            </small>
+          </div>
+        </div>
+
+        <!-- Email Field -->
+        <div class="col-12">
+          <div class="field">
+            <label for="email" class="block text-sm font-medium mb-2">
+              <i class="pi pi-envelope mr-1"></i>
+              Email Address *
+            </label>
+            <input 
+              id="email"
+              type="email" 
+              pInputText 
+              formControlName="email"
+              placeholder="Enter email address"
+              class="w-full"
+              [class.ng-invalid]="supplierForm.get('email')?.invalid && supplierForm.get('email')?.touched"
+            />
+            <small 
+              *ngIf="getFieldError('email')" 
+              class="text-red-500 text-sm"
+            >
+              {{ getFieldError('email') }}
+            </small>
+          </div>
+        </div>
+
+        <!-- Phone Field -->
+        <div class="col-12">
+          <div class="field">
+            <label for="phone" class="block text-sm font-medium mb-2">
+              <i class="pi pi-phone mr-1"></i>
+              Phone Number *
+            </label>
+            <input 
+              id="phone"
+              type="tel" 
+              pInputText 
+              formControlName="phone"
+              placeholder="Enter phone number"
+              class="w-full"
+              [class.ng-invalid]="supplierForm.get('phone')?.invalid && supplierForm.get('phone')?.touched"
+            />
+            <small 
+              *ngIf="getFieldError('phone')" 
+              class="text-red-500 text-sm"
+            >
+              {{ getFieldError('phone') }}
+            </small>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+      <div class="flex justify-content-end gap-2">
+        <p-button 
+          label="Cancel" 
+          icon="pi pi-times" 
+          [text]="true"
+          (onClick)="closeAddModal()"
+          [disabled]="submitting"
+        />
+        <p-button 
+          [label]="supplierId === 0 ? 'Add New Supplier' : 'Edit Supplier'" 
+          icon="pi pi-check" 
+          (onClick)="onSubmit()"
+          [loading]="submitting"
+          [disabled]="supplierForm.invalid"
+        />
+      </div>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Toast Messages -->
+  <p-toast></p-toast>
+</div>
