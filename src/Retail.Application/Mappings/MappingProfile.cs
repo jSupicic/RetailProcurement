@@ -18,9 +18,17 @@ public class MappingProfile : Profile
             ));
 
         // StoreItem: DTO -> Entity
-        CreateMap<StoreItemCreateDto, StoreItem>();
+        CreateMap<StoreItemCreateDto, StoreItem>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Price, opt => opt.Ignore())
+                .ForMember(dest => dest.SupplierStoreItems, opt => opt.Ignore())
+                .ForMember(dest => dest.Sales, opt => opt.Ignore());
 
         CreateMap<StoreItemUpdateDto, StoreItem>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.Price, opt => opt.Ignore())
+            .ForMember(dest => dest.SupplierStoreItems, opt => opt.Ignore())
+            .ForMember(dest => dest.Sales, opt => opt.Ignore())
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
         // Supplier: Entity -> DTO
@@ -40,10 +48,18 @@ public class MappingProfile : Profile
             });
 
         // Supplier: DTO -> Entity
-        CreateMap<SupplierCreateDto, Supplier>();
+        CreateMap<SupplierCreateDto, Supplier>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.SupplierStoreItems, opt => opt.Ignore())
+            .ForMember(dest => dest.Sales, opt => opt.Ignore())
+            .ForMember(dest => dest.QuarterlyPlans, opt => opt.Ignore());
+
         CreateMap<SupplierUpdateDto, Supplier>()
-            .ForAllMembers(opt =>
-                opt.Condition((src, dest, srcMember) => srcMember != null));
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.SupplierStoreItems, opt => opt.Ignore())
+            .ForMember(dest => dest.Sales, opt => opt.Ignore())
+            .ForMember(dest => dest.QuarterlyPlans, opt => opt.Ignore())
+            .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
         // SupplierStoreItem: Entity -> DTO
         CreateMap<SupplierStoreItem, SupplierStoreItemDto>()
@@ -51,7 +67,9 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.StoreItemName, opt => opt.MapFrom(src => src.StoreItem.Name));
 
         // SupplierStoreItem: DTO -> Entity
-        CreateMap<SupplierStoreItemCreateDto, SupplierStoreItem>();
+        CreateMap<SupplierStoreItemCreateDto, SupplierStoreItem>()
+            .ForMember(dest => dest.Supplier, opt => opt.Ignore())
+            .ForMember(dest => dest.StoreItem, opt => opt.Ignore());
 
 
         //Statistics
@@ -74,6 +92,7 @@ public class MappingProfile : Profile
 
         // QuarterlyPlan: DTO -> Entity
         CreateMap<QuarterlyPlanCreateDto, QuarterlyPlan>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(_ => DateTime.UtcNow))
             .ForMember(dest => dest.Suppliers, opt => opt.MapFrom(src =>
                 src.SupplierIds.Select(id => new QuarterlyPlanSupplier { SupplierId = id })));

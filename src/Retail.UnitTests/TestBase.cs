@@ -13,7 +13,7 @@ namespace Retail.UnitTests
             {
                 cfg.AddProfile<MappingProfile>();
             });
-
+            config.AssertConfigurationIsValid();
             _mapper = config.CreateMapper();
         }
     }

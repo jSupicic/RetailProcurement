@@ -16,7 +16,6 @@ namespace Retail.UnitTests
         public TestFixture()
         {
             var services = new ServiceCollection();
-            //RegisterConfigurationMock(services);
 
             services.AddDbContext<RetailDbContext>(options => options.UseInMemoryDatabase("TestDatabase"));
             services.AddScoped<RetailDbContext>();
@@ -25,10 +24,9 @@ namespace Retail.UnitTests
             {
                 configuration.AddProfile(new MappingProfile());
             }).CreateMapper();
-
             services.AddScoped(x => mapper);
-            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
             services.AddScoped<IStoreItemService, StoreItemService>();
             services.AddScoped<ISupplierService, SupplierService>();
