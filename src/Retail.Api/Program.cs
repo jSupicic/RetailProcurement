@@ -1,12 +1,13 @@
+using Bogus;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Retail.Api.Hubs;
+using Retail.Application.Mappings;
 using Retail.Application.Services;
 using Retail.Infrastructure.Context;
-using Bogus;
-using Retail.Infrastructure.Seed;
 using Retail.Infrastructure.Repositories;
-using Retail.Application.Mappings;
-using Microsoft.AspNetCore.SignalR;
-using Retail.Api.Hubs;
+using Retail.Infrastructure.Seed;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    // Locate XML file
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    options.IncludeXmlComments(xmlPath);
 
     // Optional: Customize Swagger info
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
