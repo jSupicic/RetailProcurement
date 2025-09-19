@@ -8,13 +8,19 @@ namespace Retail.Application.Services
     public class SupplierStoreItemService : ISupplierStoreItemService
     {
         private readonly IRepository<SupplierStoreItem> _supplierStoreItemRepository;
+        private readonly IRepository<StoreItem> _storeItemRepository;
+        private readonly IRepository<Supplier> _supplierRepository;
         private readonly IMapper _mapper;
 
         public SupplierStoreItemService(
             IRepository<SupplierStoreItem> supplierStoreItemRepository,
+            IRepository<StoreItem> storeItemRepository,
+            IRepository<Supplier> supplierRepository,
             IMapper mapper)
         {
             _supplierStoreItemRepository = supplierStoreItemRepository;
+            _storeItemRepository = storeItemRepository;
+            _supplierRepository = supplierRepository;
             _mapper = mapper;
         }
 
@@ -26,12 +32,18 @@ namespace Retail.Application.Services
 
         public async Task<SupplierStoreItemDto?> CreateAsync(SupplierStoreItemCreateDto dto)
         {
-            var existing = _supplierStoreItemRepository
+            var existingRelation = _supplierStoreItemRepository
                 .FindAsync(ssi => ssi.SupplierId == dto.SupplierId && ssi.StoreItemId == dto.StoreItemId)
                 .Result
                 .FirstOrDefault();
 
-            if (existing is not null) throw new Exception("The supplier already offers this item.");
+            if (existingRelation is not null) throw new Exception("The supplier already offers this item.");
+
+            var existingSupplier = await _supplierRepository.GetByIdAsync(dto.SupplierId);
+            if (existingSupplier is null) throw new Exception("This supplier does not exist");
+
+            var existingStoreItem = await _storeItemRepository .GetByIdAsync(dto.StoreItemId);
+            if (existingStoreItem is null) throw new Exception("This store item does not exist");
 
             var entity = _mapper.Map<SupplierStoreItem>(dto);
 

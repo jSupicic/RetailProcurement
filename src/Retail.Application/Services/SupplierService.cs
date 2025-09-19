@@ -37,17 +37,17 @@ namespace Retail.Application.Services
             return _mapper.Map<SupplierDto>(entity);
         }
 
-        public async Task<bool> UpdateAsync(int id, SupplierUpdateDto dto)
+        public async Task<SupplierDto?> UpdateAsync(int id, SupplierUpdateDto dto)
         {
             var entity = await _supplierRepository.GetByIdAsync(id);
-            if (entity == null) return false;
+            if (entity == null) return null;
 
             _mapper.Map(dto, entity);
 
             await _supplierRepository.UpdateAsync(entity);
             await _supplierRepository.SaveChangesAsync();
 
-            return true;
+            return _mapper.Map<SupplierDto>(entity);
         }
 
         public async Task<bool> DeleteAsync(int id)

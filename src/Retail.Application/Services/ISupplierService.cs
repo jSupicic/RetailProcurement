@@ -7,7 +7,7 @@ namespace Retail.Application.Services
         Task<IEnumerable<SupplierDto>> GetAllAsync();
         Task<SupplierDto?> GetByIdAsync(int id);
         Task<SupplierDto> CreateAsync(SupplierCreateDto dto);
-        Task<bool> UpdateAsync(int id, SupplierUpdateDto dto);
+        Task<SupplierDto?> UpdateAsync(int id, SupplierUpdateDto dto);
         Task<bool> DeleteAsync(int id);
     }
 }
