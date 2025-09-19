@@ -12,8 +12,6 @@ Run locally:
     - cd src/Retail.Api
     - dotnet run
 
-•	The API will be available at the URLs specified in launchSettings.json (e.g., https://localhost:5001).
-
 3. Frontend
 position into /retail-ui
     - npm start
