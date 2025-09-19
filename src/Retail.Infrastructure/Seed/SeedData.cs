@@ -1,10 +1,6 @@
 ﻿using Bogus;
-using Microsoft.EntityFrameworkCore;
 using Retail.Domain.Entities;
 using Retail.Infrastructure.Context;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Retail.Infrastructure.Seed;
 

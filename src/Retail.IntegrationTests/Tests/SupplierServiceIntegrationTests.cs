@@ -1,11 +1,9 @@
-using System.Linq;
-using System.Threading.Tasks;
 using FluentAssertions;
 using Retail.Application.DTOs;
 using Retail.Application.Services;
 using Xunit;
 
-namespace Retail.IntegrationTests.ServiceTests;
+namespace Retail.IntegrationTests.Tests;
 
 public class SupplierServiceIntegrationTests : IntegrationTestBase
 {

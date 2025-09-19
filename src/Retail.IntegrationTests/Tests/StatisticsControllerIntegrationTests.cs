@@ -1,11 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
-using System.Threading.Tasks;
 using FluentAssertions;
 using Retail.Application.DTOs;
 using Xunit;
 
-namespace Retail.IntegrationTests.ServiceTests;
+namespace Retail.IntegrationTests.Tests;
 
 public class StatisticsControllerIntegrationTests : IntegrationTestBase
 {

@@ -1,7 +1,4 @@
-﻿using Retail.Domain;
-using Retail.Domain.Entities;
-
-namespace Retail.Domain.Entities
+﻿namespace Retail.Domain.Entities
 {
     public class Supplier
     {

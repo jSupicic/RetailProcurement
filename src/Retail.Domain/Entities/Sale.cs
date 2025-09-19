@@ -1,5 +1,4 @@
-﻿using Retail.Domain;
-using Retail.Domain.Entities;
+﻿using Retail.Domain.Entities;
 
 public class Sale
 {

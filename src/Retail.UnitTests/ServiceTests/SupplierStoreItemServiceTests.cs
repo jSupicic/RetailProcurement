@@ -1,7 +1,5 @@
-﻿using AutoMapper;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
-using Retail.Application.DTOs;
 using Retail.Application.Services;
 using Retail.Domain.Entities;
 using Retail.Infrastructure.Repositories;

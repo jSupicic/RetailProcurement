@@ -5,7 +5,6 @@ using Retail.Application.Services;
 using Retail.Domain.Entities;
 using Retail.Infrastructure.Repositories;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Retail.UnitTests.ServiceTests
 {
