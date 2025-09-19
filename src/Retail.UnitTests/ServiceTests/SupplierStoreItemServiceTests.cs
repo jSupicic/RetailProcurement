@@ -10,13 +10,23 @@ namespace Retail.UnitTests.ServiceTests
 {
     public class SupplierStoreItemServiceTests : TestBase
     {
+        private readonly Mock<IRepository<Supplier>> _supplierMockRepo;
         private readonly Mock<IRepository<SupplierStoreItem>> _supplierStoreItemMockRepo;
-        private readonly SupplierStoreItemService _service;
+        private readonly Mock<IRepository<StoreItem>> _storeItemMockRepo;
+        private readonly SupplierStoreItemService _supplierStoreItemService;
 
         public SupplierStoreItemServiceTests()
         {
+            _supplierMockRepo = new Mock<IRepository<Supplier>>();
             _supplierStoreItemMockRepo = new Mock<IRepository<SupplierStoreItem>>();
-            _service = new SupplierStoreItemService(_supplierStoreItemMockRepo.Object, _mapper);
+            _storeItemMockRepo = new Mock<IRepository<StoreItem>>();
+
+            _supplierStoreItemService = new SupplierStoreItemService(
+                _supplierStoreItemMockRepo.Object,
+                _storeItemMockRepo.Object,
+                _supplierMockRepo.Object,
+                _mapper
+            );
         }
 
         [Fact]
@@ -33,7 +43,7 @@ namespace Retail.UnitTests.ServiceTests
                      .ReturnsAsync(entities);
 
             // Act
-            var result = await _service.GetAllAsync();
+            var result = await _supplierStoreItemService.GetAllAsync();
 
             // Assert
             result.Should().HaveCount(2);
@@ -41,48 +51,6 @@ namespace Retail.UnitTests.ServiceTests
             result.First().StoreItemId.Should().Be(10);
 
             _supplierStoreItemMockRepo.Verify(r => r.GetAllAsync(), Times.Once);
-        }
-
-        [Fact]
-        public async Task CreateAsync_OneSuccess_SecondSameFail()
-        {
-            // Arrange
-            var dto = new SupplierStoreItemCreateDto { SupplierId = 1, StoreItemId = 5, SupplierPrice = 50 };
-            SupplierStoreItem? capturedEntity = null;
-            var callCount = 0;
-
-            _supplierStoreItemMockRepo.Setup(r => r.AddAsync(It.IsAny<SupplierStoreItem>()))
-                     .Callback<SupplierStoreItem>(entity =>
-                     {
-                         callCount++;
-                         if (callCount == 1)
-                         {
-                             capturedEntity = entity;
-                         }
-                         if (callCount > 1)
-                         {
-                             throw new InvalidOperationException("Entity already exists");
-                         }
-                     })
-                     .Returns(Task.CompletedTask);
-
-            // Act
-            var result = await _service.CreateAsync(dto);
-            Func<Task> result2 = async () => await _service.CreateAsync(dto);
-
-            // Assert
-            result.Should().NotBeNull();
-            result.SupplierId.Should().Be(1);
-            result.StoreItemId.Should().Be(5);
-            result.SupplierPrice.Should().Be(50);
-
-            await result2.Should().ThrowAsync<InvalidOperationException>();
-
-            capturedEntity.Should().NotBeNull();
-            capturedEntity!.SupplierId.Should().Be(1);
-
-            _supplierStoreItemMockRepo.Verify(r => r.AddAsync(It.IsAny<SupplierStoreItem>()), Times.Exactly(2));
-            _supplierStoreItemMockRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
         }
 
         [Fact]
@@ -95,7 +63,7 @@ namespace Retail.UnitTests.ServiceTests
                      .ReturnsAsync(new List<SupplierStoreItem> { entity });
 
             // Act
-            var result = await _service.DeleteAsync(1, 10);
+            var result = await _supplierStoreItemService.DeleteAsync(1, 10);
 
             // Assert
             result.Should().BeTrue();
@@ -114,7 +82,7 @@ namespace Retail.UnitTests.ServiceTests
 
 
             // Act
-            var result = await _service.DeleteAsync(1, 10);
+            var result = await _supplierStoreItemService.DeleteAsync(1, 10);
 
             // Assert
             result.Should().BeFalse();

@@ -102,7 +102,7 @@ namespace Retail.UnitTests.ServiceTests
 
             var result = await _service.UpdateAsync(1, new SupplierUpdateDto { Name = "Updated" });
 
-            Assert.False(result);
+            Assert.Null(result);
         }
 
         [Fact]
@@ -119,8 +119,8 @@ namespace Retail.UnitTests.ServiceTests
             var result = await _service.UpdateAsync(1, dto);
 
             // Assert
-            result.Should().BeTrue();
-            supplier.Name.Should().Be("New Name"); // Confirm mapping worked
+            result.Should().NotBeNull();
+            result.Name.Should().Be("New Name"); // Confirm mapping worked
 
             _supplierMockRepo.Verify(r => r.UpdateAsync(supplier), Times.Once);
             _supplierMockRepo.Verify(r => r.SaveChangesAsync(), Times.Once);

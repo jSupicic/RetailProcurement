@@ -35,12 +35,10 @@ public class SupplierServiceIntegrationTests : IntegrationTestBase
 
         // Update
         var updated = await _service.UpdateAsync(created.Id, new SupplierUpdateDto { Name = "UpdatedSupplier", Email = "updated@s.com" });
-        updated.Should().BeTrue();
 
-        var afterUpdate = await _service.GetByIdAsync(created.Id);
-        afterUpdate.Should().NotBeNull();
-        afterUpdate!.Name.Should().Be("UpdatedSupplier");
-        afterUpdate.Email.Should().Be("updated@s.com");
+        updated.Should().NotBeNull();
+        updated!.Name.Should().Be("UpdatedSupplier");
+        updated.Email.Should().Be("updated@s.com");
 
         // Delete
         var deleted = await _service.DeleteAsync(created.Id);
