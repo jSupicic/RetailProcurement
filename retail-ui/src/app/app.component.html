@@ -12,18 +12,18 @@
   </header>
 
   <!-- Main Content Area -->
-  <main class="app-main">
+  <main class="app-main" [class.authenticated]="isAuthenticated">
     <div class="content-wrapper">
       <router-outlet />
     </div>
   </main>
 
-  <!-- Footer -->
-  <footer class="app-footer">
+  <!-- Footer (only show when authenticated) -->
+  <footer class="app-footer" *ngIf="isAuthenticated">
     <p-card [style]="{'background': 'var(--surface-100)', 'border': 'none', 'border-radius': '0'}">
       <div class="text-center">
         <p class="text-sm text-600 m-0">
-          © 2024 Retail Portal. Built with Angular & PrimeNG.
+          © 2024 {{ title }}. Built with Angular & PrimeNG.
         </p>
       </div>
     </p-card>

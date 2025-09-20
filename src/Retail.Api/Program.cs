@@ -1,11 +1,13 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Retail.Api.Hubs;
+using Retail.Api.Users;
 using Retail.Application.Mappings;
 using Retail.Application.Services;
 using Retail.Infrastructure.Context;
 using Retail.Infrastructure.Repositories;
 using Retail.Infrastructure.Seed;
-using System.Reflection;
+using Retail.Api.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,21 +18,7 @@ builder.Services.AddOpenApi();
 // Add services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    // Locate XML file
-    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    options.IncludeXmlComments(xmlPath);
-
-    // Optional: Customize Swagger info
-    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
-    {
-        Title = "Retail Procurement System API",
-        Version = "v1",
-        Description = "API for managing store items, suppliers, and procurement statistics."
-    });
-});
+builder.Services.AddSwaggerGenWithAuth();
 
 // SignalR + CORS
 builder.Services.AddCors(options =>
@@ -53,6 +41,21 @@ builder.Services.AddDbContext<RetailDbContext>(opt => opt
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 // Register services / repositories
+builder.Services.AddSingleton<TokenProvider>();
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(o =>
+    {
+        o.RequireHttpsMetadata = false;
+        o.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        {
+            IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]!)),
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
 builder.Services.AddScoped<IStoreItemService, StoreItemService>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
@@ -81,6 +84,8 @@ app.UseCors("CorsPolicy");
 app.UseHttpsRedirection();
 app.MapControllers();
 app.MapHub<NotificationHub>("/notificationHub");
+app.UseAuthentication();
+app.UseAuthorization();
 app.Run();
 
 public partial class Program { } // For integration testing

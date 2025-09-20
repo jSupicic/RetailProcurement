@@ -1,13 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Retail.Application.DTOs;
-using Retail.Application.Services;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Retail.Api.Hubs;
+using Retail.Application.DTOs;
+using Retail.Application.Services;
 
 namespace Retail.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class SupplierStoreItemsController : ControllerBase
     {
         private readonly ISupplierStoreItemService _supplierStoreItemService;

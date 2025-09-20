@@ -1,0 +1,127 @@
+<div class="login-container">
+  <div class="login-wrapper">
+    <!-- Login Card -->
+    <p-card class="login-card">
+      <ng-template pTemplate="header">
+        <div class="login-header">
+          <div class="logo-section">
+            <i class="pi pi-shopping-cart logo-icon"></i>
+            <h1 class="app-title">Retail Procurement</h1>
+          </div>
+          <p class="app-subtitle">Sign in to your account</p>
+        </div>
+      </ng-template>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+        <!-- Username Field -->
+        <div class="field">
+          <label for="username" class="field-label">
+            <i class="pi pi-user"></i>
+            Username
+          </label>
+          <input
+            id="username"
+            type="text"
+            pInputText
+            formControlName="username"
+            placeholder="Enter your username"
+            class="field-input"
+            [class.ng-invalid]="isFieldInvalid('username')"
+            autocomplete="username"
+          />
+          <small 
+            *ngIf="getFieldError('username')" 
+            class="field-error"
+          >
+            {{ getFieldError('username') }}
+          </small>
+        </div>
+
+        <!-- Password Field -->
+        <div class="field">
+          <label for="password" class="field-label">
+            <i class="pi pi-lock"></i>
+            Password
+          </label>
+          <div class="password-input-wrapper">
+            <input
+              id="password"
+              [type]="showPassword ? 'text' : 'password'"
+              pInputText
+              formControlName="password"
+              placeholder="Enter your password"
+              class="field-input password-input"
+              [class.ng-invalid]="isFieldInvalid('password')"
+              autocomplete="current-password"
+            />
+            <button
+              type="button"
+              class="password-toggle"
+              (click)="togglePasswordVisibility()"
+              [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+            >
+              <i [class]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+            </button>
+          </div>
+          <small 
+            *ngIf="getFieldError('password')" 
+            class="field-error"
+          >
+            {{ getFieldError('password') }}
+          </small>
+        </div>
+
+        <!-- Remember Me Checkbox -->
+        <div class="field checkbox-field">
+          <p-checkbox
+            formControlName="rememberMe"
+            [binary]="true"
+            inputId="rememberMe"
+            class="remember-checkbox"
+          ></p-checkbox>
+          <label for="rememberMe" class="checkbox-label">
+            Remember me
+          </label>
+        </div>
+
+        <!-- Login Button -->
+          <p-button
+            label="Sign In"
+            icon="pi pi-sign-in"
+            [loading]="loading"
+            [disabled]="loginForm.invalid || loading"
+          />
+
+        <!-- Divider -->
+        <div class="divider">
+          <span class="divider-text">or</span>
+        </div>
+      </form>
+
+      <!-- Footer Links -->
+      <ng-template pTemplate="footer">
+        <div class="login-footer">
+          <div class="footer-links">
+            <a href="#" class="footer-link">Forgot Password?</a>
+            <a href="#" class="footer-link">Need Help?</a>
+          </div>
+          <div class="footer-info">
+            <small class="footer-text">
+              By signing in, you agree to our Terms of Service and Privacy Policy
+            </small>
+          </div>
+        </div>
+      </ng-template>
+    </p-card>
+
+    <!-- Background Elements -->
+    <div class="background-elements">
+      <div class="bg-circle bg-circle-1"></div>
+      <div class="bg-circle bg-circle-2"></div>
+      <div class="bg-circle bg-circle-3"></div>
+    </div>
+  </div>
+
+  <!-- Toast Messages -->
+  <p-toast position="top-right"></p-toast>
+</div>

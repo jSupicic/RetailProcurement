@@ -16,6 +16,10 @@
   flex: 1;
   padding: 1rem;
   background: var(--surface-ground);
+  
+  &.authenticated {
+    padding-top: 0;
+  }
 }
 
 .content-wrapper {

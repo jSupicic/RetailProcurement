@@ -1,9 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { RouterOutlet, RouterModule } from '@angular/router';
 import { MenubarModule } from 'primeng/menubar';
 import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
 import { CommonModule } from '@angular/common';
+import { AuthService } from './core/services/auth.service';
+import { Subject, takeUntil } from 'rxjs';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-root',
@@ -12,8 +14,9 @@ import { CommonModule } from '@angular/common';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent {
-  title = 'retail-portal';
+export class AppComponent implements OnInit, OnDestroy {
+  title = 'Retail Procurement';
+  isAuthenticated = false;
   
   menuItems = [
     {
@@ -37,4 +40,21 @@ export class AppComponent {
       routerLink: '/statistics/quarterly-plan'
     }
   ];
+  private destroy$ = new Subject<void>();
+
+  constructor(private readonly authService: AuthService) {}
+
+  ngOnInit(): void {
+    // Subscribe to authentication state changes
+    this.authService.isAuthenticated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(isAuthenticated => {
+        this.isAuthenticated = isAuthenticated;
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 }

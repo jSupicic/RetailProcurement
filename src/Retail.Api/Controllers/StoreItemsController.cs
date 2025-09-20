@@ -3,11 +3,13 @@ using Retail.Application.DTOs;
 using Retail.Application.Services;
 using Microsoft.AspNetCore.SignalR;
 using Retail.Api.Hubs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Retail.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class StoreItemsController : ControllerBase
     {
         private readonly IStoreItemService _storeItemService;

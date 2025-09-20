@@ -24,3 +24,5 @@ position into /retail-ui
 From the solution root:
     - dotnet test src/Retail.UnitTests
     - dotnet test src/Retail.IntegrationTests
+
+After running the app, Log in with credentials: Username: "RetailAdmin", password: "password"

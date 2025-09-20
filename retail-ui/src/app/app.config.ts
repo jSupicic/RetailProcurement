@@ -7,13 +7,14 @@ import { provideHttpClient, withInterceptors, withFetch } from '@angular/common/
 import { apiPrefixInterceptor } from './core/interceptors/api-prefix.interceptor';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { SignalRService } from './core/services/signalr.service';
+import { authInterceptor } from './core/interceptors/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideClientHydration(),
-    provideHttpClient(withFetch(), withInterceptors([apiPrefixInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([apiPrefixInterceptor, authInterceptor()])),
     provideAnimationsAsync(),
     SignalRService
   ]
