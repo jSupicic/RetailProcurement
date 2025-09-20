@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { Supplier } from './suppliers.service';
 
 export interface SupplierStats {
@@ -26,7 +27,7 @@ export interface QuarterlyPlan {
   providedIn: 'root'
 })
 export class StatisticsService {
-  private readonly baseUrl = 'https://localhost:7250/api/statistics';
+  private readonly baseUrl = `${environment.apiUrl}/statistics`;
 
   constructor(private readonly http: HttpClient) {}
 

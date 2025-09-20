@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TableModule } from 'primeng/table';
@@ -18,6 +18,8 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DropdownModule } from 'primeng/dropdown';
 import { SupplierStoreItem, SupplierStoreItemsService } from 'src/app/core/services/supplier-store-items.service';
+import { SignalRService, SupplierStoreItemNotification } from '../../../core/services/signalr.service';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-supplier-store-items-list',
@@ -46,7 +48,7 @@ import { SupplierStoreItem, SupplierStoreItemsService } from 'src/app/core/servi
   templateUrl: './list.component.html',
   styleUrl: './list.component.scss'
 })
-export class ListComponent implements OnInit {
+export class ListComponent implements OnInit, OnDestroy {
   items: SupplierStoreItem[] = [];
   filteredItems: SupplierStoreItem[] = [];
   loading = true;
@@ -58,8 +60,13 @@ export class ListComponent implements OnInit {
   itemForm: FormGroup;
   submitting = false;
 
+  // SignalR properties
+  private destroy$ = new Subject<void>();
+  connectionStatus = 'Disconnected';
+
   constructor(
     private readonly supplierStoreItemsService: SupplierStoreItemsService,
+    private readonly signalRService: SignalRService,
     private readonly fb: FormBuilder,
     private readonly messageService: MessageService
   ) {
@@ -72,6 +79,12 @@ export class ListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadItems();
+    this.initializeSignalR();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadItems(): void {
@@ -118,11 +131,6 @@ export class ListComponent implements OnInit {
       next: () => {
         this.items = this.items.filter(item => !(item.supplierId === supplierId && item.storeItemId === storeItemId));
         this.filteredItems = this.filteredItems.filter(item => !(item.supplierId === supplierId && item.storeItemId === storeItemId));
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Supplier-store item relationship deleted successfully'
-        });
         this.loading = false;
       },
       error: () => {
@@ -177,11 +185,6 @@ export class ListComponent implements OnInit {
 
       this.supplierStoreItemsService.create(itemData).subscribe({
         next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Supplier-store item relationship created successfully'
-          });
           this.loadItems();
           this.closeAddModal();
         },
@@ -224,5 +227,77 @@ export class ListComponent implements OnInit {
       style: 'currency',
       currency: 'USD'
     }).format(value);
+  }
+
+  private async initializeSignalR(): Promise<void> {
+    try {
+      // Start SignalR connection
+      await this.signalRService.startConnection();
+      
+      // Listen to connection state changes
+      this.signalRService.getConnectionState()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(state => {
+          this.connectionStatus = state.toString();
+          console.log('SignalR connection state:', state);
+        });
+
+      // Listen to supplier-store item notifications
+      this.signalRService.getSupplierStoreItemNotifications()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(notification => {
+          this.handleSupplierStoreItemNotification(notification);
+        });
+
+    } catch (error) {
+      console.error('Failed to initialize SignalR connection:', error);
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Connection Warning',
+        detail: 'Real-time updates may not be available'
+      });
+    }
+  }
+
+  private handleSupplierStoreItemNotification(notification: SupplierStoreItemNotification): void {
+    const { type, item } = notification;
+
+    switch (type) {
+      case 'created':
+        // Add new item to the list
+        this.items.push(item);
+        this.filteredItems = [...this.items];
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Relationship Added',
+          detail: `"${item.supplierName}" - "${item.storeItemName}" has been added`
+        });
+        break;
+
+      case 'updated':
+        // Update existing item in the list
+        const updateIndex = this.items.findIndex(i => i.supplierId === item.supplierId && i.storeItemId === item.storeItemId);
+        if (updateIndex !== -1) {
+          this.items[updateIndex] = item;
+          this.filteredItems = [...this.items];
+          this.messageService.add({
+            severity: 'info',
+            summary: 'Relationship Updated',
+            detail: `"${item.supplierName}" - "${item.storeItemName}" has been updated`
+          });
+        }
+        break;
+
+      case 'deleted':
+        // Remove item from the list
+        this.items = this.items.filter(i => !(i.supplierId === item.supplierId && i.storeItemId === item.storeItemId));
+        this.filteredItems = this.filteredItems.filter(i => !(i.supplierId === item.supplierId && i.storeItemId === item.storeItemId));
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Relationship Deleted',
+          detail: `Supplier-Store Item relationship has been deleted`
+        });
+        break;
+    }
   }
 }

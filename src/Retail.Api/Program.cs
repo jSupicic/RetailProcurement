@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Retail.Api.Hubs;
 using Retail.Application.Mappings;
 using Retail.Application.Services;
 using Retail.Infrastructure.Context;
@@ -79,7 +80,7 @@ using (var scope = app.Services.CreateScope())
 app.UseCors("CorsPolicy");
 app.UseHttpsRedirection();
 app.MapControllers();
-
+app.MapHub<NotificationHub>("/notificationHub");
 app.Run();
 
 public partial class Program { } // For integration testing

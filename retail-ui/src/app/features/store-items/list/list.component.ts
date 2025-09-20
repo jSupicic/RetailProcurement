@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { StoreItemsService, StoreItem } from '../../../core/services/store-items.service';
+import { SignalRService, StoreItemNotification } from '../../../core/services/signalr.service';
 import { TableModule } from 'primeng/table';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -17,6 +18,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { DropdownModule } from 'primeng/dropdown';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-store-items-list',
@@ -44,7 +46,7 @@ import { DropdownModule } from 'primeng/dropdown';
   templateUrl: './list.component.html',
   styleUrl: './list.component.scss'
 })
-export class ListComponent implements OnInit {
+export class ListComponent implements OnInit, OnDestroy {
   items: StoreItem[] = [];
   filteredItems: StoreItem[] = [];
   loading = true;
@@ -56,8 +58,13 @@ export class ListComponent implements OnInit {
   itemForm: FormGroup;
   submitting = false;
 
+  // SignalR properties
+  private destroy$ = new Subject<void>();
+  connectionStatus = 'Disconnected';
+
   constructor(
     private readonly storeItems: StoreItemsService,
+    private readonly signalRService: SignalRService,
     private readonly fb: FormBuilder,
     private readonly messageService: MessageService
   ) {
@@ -70,6 +77,12 @@ export class ListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadItems();
+    this.initializeSignalR();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadItems(): void {
@@ -114,11 +127,6 @@ export class ListComponent implements OnInit {
       next: () => {
         this.items = this.items.filter(item => item.id !== id);
         this.filteredItems = this.filteredItems.filter(item => item.id !== id);
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Store item deleted successfully'
-        });
         this.loading = false;
       },
       error: () => {
@@ -166,11 +174,6 @@ export class ListComponent implements OnInit {
           next: (createdItem) => {
             this.items.push(createdItem);
             this.filteredItems = [...this.items];
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Success',
-              detail: 'Store item added successfully'
-            });
             this.closeAddModal();
           },
           error: () => {
@@ -189,11 +192,6 @@ export class ListComponent implements OnInit {
             const updatedItem = { ...this.items.find(item => item.id === this.itemId)!, ...itemData };
             this.items = this.items.map(item => item.id === this.itemId ? updatedItem : item);
             this.filteredItems = [...this.items];
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Success',
-              detail: 'Store item updated successfully'
-            });
             this.closeAddModal();
           },
           error: () => {
@@ -232,5 +230,68 @@ export class ListComponent implements OnInit {
       }
     }
     return '';
+  }
+
+  private async initializeSignalR(): Promise<void> {
+    try {
+      // Start SignalR connection
+      await this.signalRService.startConnection();
+      
+      // Listen to connection state changes
+      this.signalRService.getConnectionState()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(state => {
+          this.connectionStatus = state.toString();
+          console.log('SignalR connection state:', state);
+        });
+
+      // Listen to store item notifications
+      this.signalRService.getStoreItemNotifications()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(notification => {
+          this.handleStoreItemNotification(notification);
+        });
+
+    } catch (error) {
+      console.error('Failed to initialize SignalR connection:', error);
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Connection Warning',
+        detail: 'Real-time updates may not be available'
+      });
+    }
+  }
+
+  private handleStoreItemNotification(notification: StoreItemNotification): void {
+    const { type, item } = notification;
+
+    switch (type) {
+      case 'created':
+        // Add new item to the list
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Store Item Added',
+          detail: `"${item.name}" has been added`
+        });
+        break;
+
+      case 'updated':
+        // Update existing item in the list
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Store Item Updated',
+          detail: `"${item.name}" has been updated`
+        });
+        break;
+
+      case 'deleted':
+        // Remove item from the list
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Item Deleted',
+          detail: `Store Item has been deleted`
+        });
+        break;
+    }
   }
 }

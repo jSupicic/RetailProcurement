@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { QuarterlyPlan, StatisticsService } from '../../../core/services/statistics.service';
+import { SignalRService, QuarterlyPlanNotification } from '../../../core/services/signalr.service';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { CardModule } from 'primeng/card';
@@ -18,6 +19,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DropdownModule } from 'primeng/dropdown';
 import { Supplier } from 'src/app/core/services/suppliers.service';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-quarterly-plan',
@@ -45,7 +47,7 @@ import { Supplier } from 'src/app/core/services/suppliers.service';
   templateUrl: './quarterly-plan.component.html',
   styleUrl: './quarterly-plan.component.scss'
 })
-export class QuarterlyPlanComponent implements OnInit {
+export class QuarterlyPlanComponent implements OnInit, OnDestroy {
   plans: QuarterlyPlan[] = [];
   filteredPlans: QuarterlyPlan[] = [];
   suppliers: Supplier[] = [];
@@ -58,6 +60,10 @@ export class QuarterlyPlanComponent implements OnInit {
   showAddModal = false;
   planForm: FormGroup;
   submitting = false;
+
+  // SignalR properties
+  private destroy$ = new Subject<void>();
+  connectionStatus = 'Disconnected';
 
   // Quarter options
   quarterOptions = [
@@ -78,6 +84,7 @@ export class QuarterlyPlanComponent implements OnInit {
 
   constructor(
     private readonly stats: StatisticsService,
+    private readonly signalRService: SignalRService,
     private readonly fb: FormBuilder,
     private readonly messageService: MessageService
   ) {
@@ -90,6 +97,12 @@ export class QuarterlyPlanComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadPlans();
+    this.initializeSignalR();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadPlans(): void {
@@ -178,11 +191,6 @@ export class QuarterlyPlanComponent implements OnInit {
 
       this.stats.planQuarter(planData).subscribe({
         next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Quarterly plan saved successfully'
-          });
           this.loadPlans();
           this.closeAddModal();
         },
@@ -258,5 +266,72 @@ export class QuarterlyPlanComponent implements OnInit {
     if (planQuarter === currentQuarter) return 'success';
     if (planQuarter > currentQuarter) return 'info';
     return 'warning';
+  }
+
+  private async initializeSignalR(): Promise<void> {
+    try {
+      // Start SignalR connection
+      await this.signalRService.startConnection();
+      
+      // Listen to connection state changes
+      this.signalRService.getConnectionState()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(state => {
+          this.connectionStatus = state.toString();
+          console.log('SignalR connection state:', state);
+        });
+
+      // Listen to quarterly plan notifications
+      this.signalRService.getQuarterlyPlanNotifications()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(notification => {
+          this.handleQuarterlyPlanNotification(notification);
+        });
+
+    } catch (error) {
+      console.error('Failed to initialize SignalR connection:', error);
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Connection Warning',
+        detail: 'Real-time updates may not be available'
+      });
+    }
+  }
+
+  private handleQuarterlyPlanNotification(notification: QuarterlyPlanNotification): void {
+    const { type, plan } = notification;
+    console.log(notification);
+
+    switch (type) {
+      case 'created':
+        // Reload plans to get updated data
+        this.loadPlans();
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Quarterly Plan Added',
+          detail: `Plan for Q${plan.quarter} ${plan.year} has been added`
+        });
+        break;
+
+      case 'updated':
+        // Reload plans to get updated data
+        this.loadPlans();
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Quarterly Plan Updated',
+          detail: `Plan for Q${plan.quarter} ${plan.year} has been updated`
+        });
+        break;
+
+      case 'deleted':
+        // Reload plans to get updated data
+        this.loadPlans();
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Quarterly Plan Deleted',
+          detail: `Quarterly plan has been deleted`
+        });
+        break;
+    }
   }
 }

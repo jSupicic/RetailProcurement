@@ -2,6 +2,7 @@
 using Retail.Application.DTOs;
 using Retail.Application.Services;
 using Microsoft.AspNetCore.SignalR;
+using Retail.Api.Hubs;
 
 namespace Retail.Api.Controllers
 {
@@ -10,10 +11,12 @@ namespace Retail.Api.Controllers
     public class StoreItemsController : ControllerBase
     {
         private readonly IStoreItemService _storeItemService;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
-        public StoreItemsController(IStoreItemService storeItemService)
+        public StoreItemsController(IStoreItemService storeItemService, IHubContext<NotificationHub> hubContext)
         {
             _storeItemService = storeItemService;
+            _hubContext = hubContext;
         }
 
         /// <summary>
@@ -57,6 +60,7 @@ namespace Retail.Api.Controllers
         public async Task<ActionResult<StoreItemDto>> CreateStoreItem(StoreItemCreateDto dto)
         {
             var created = await _storeItemService.CreateAsync(dto);
+            await _hubContext.Clients.All.SendAsync("StoreItemCreated", created);
             return Ok(created);
         }
 
@@ -76,6 +80,7 @@ namespace Retail.Api.Controllers
             var updated = await _storeItemService.UpdateAsync(id, dto);
             if (!updated) return NotFound();
             var after = await _storeItemService.GetByIdAsync(id);
+            await _hubContext.Clients.All.SendAsync("StoreItemUpdated", after);
             return NoContent();
         }
 
@@ -92,8 +97,8 @@ namespace Retail.Api.Controllers
         public async Task<IActionResult> DeleteStoreItem(int id)
         {
             var deleted = await _storeItemService.DeleteAsync(id);
-            
             if (!deleted) return NotFound();
+            await _hubContext.Clients.All.SendAsync("StoreItemDeleted", id);
             return NoContent();
         }
     }

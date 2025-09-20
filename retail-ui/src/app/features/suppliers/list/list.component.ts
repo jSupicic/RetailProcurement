@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { SuppliersService, Supplier } from '../../../core/services/suppliers.service';
+import { SignalRService, SupplierNotification } from '../../../core/services/signalr.service';
 import { TableModule } from 'primeng/table';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -15,6 +16,7 @@ import { DialogModule } from 'primeng/dialog';
 import { MessageModule } from 'primeng/message';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-suppliers-list',
@@ -40,7 +42,7 @@ import { MessageService } from 'primeng/api';
   templateUrl: './list.component.html',
   styleUrl: './list.component.scss'
 })
-export class ListComponent implements OnInit {
+export class ListComponent implements OnInit, OnDestroy {
   suppliers: Supplier[] = [];
   filteredSuppliers: Supplier[] = [];
   loading = true;
@@ -52,8 +54,13 @@ export class ListComponent implements OnInit {
   supplierForm: FormGroup;
   submitting = false;
 
+  // SignalR properties
+  private destroy$ = new Subject<void>();
+  connectionStatus = 'Disconnected';
+
   constructor(
     private readonly suppliersService: SuppliersService,
+    private readonly signalRService: SignalRService,
     private readonly fb: FormBuilder,
     private readonly messageService: MessageService
   ) {
@@ -66,6 +73,12 @@ export class ListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadSuppliers();
+    this.initializeSignalR();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadSuppliers(): void {
@@ -109,11 +122,7 @@ export class ListComponent implements OnInit {
     this.suppliersService.delete(id).subscribe({
       next: () => {
         this.suppliers = this.suppliers.filter(supplier => supplier.id !== id);
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Supplier deleted successfully'
-        });
+        this.loading = false;
       },
       error: () => {
         this.messageService.add({
@@ -163,11 +172,6 @@ export class ListComponent implements OnInit {
           next: (createdSupplier) => {
             this.suppliers.push(createdSupplier);
             this.filteredSuppliers = [...this.suppliers];
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Success',
-              detail: 'Supplier added successfully'
-            });
             this.closeAddModal();
           },
           error: (error) => {
@@ -184,11 +188,6 @@ export class ListComponent implements OnInit {
           next: (updatedSupplier) => {
             this.suppliers = this.suppliers.map(supplier => supplier.id === this.supplierId ? updatedSupplier : supplier);
             this.filteredSuppliers = [...this.suppliers];
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Success',
-              detail: 'Supplier edited successfully'
-            });
             this.closeAddModal();
           },
           error: (error) => {
@@ -230,5 +229,68 @@ export class ListComponent implements OnInit {
       }
     }
     return '';
+  }
+
+  private async initializeSignalR(): Promise<void> {
+    try {
+      // Start SignalR connection
+      await this.signalRService.startConnection();
+      
+      // Listen to connection state changes
+      this.signalRService.getConnectionState()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(state => {
+          this.connectionStatus = state.toString();
+          console.log('SignalR connection state:', state);
+        });
+
+      // Listen to supplier notifications
+      this.signalRService.getSupplierNotifications()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(notification => {
+          this.handleSupplierNotification(notification);
+        });
+
+    } catch (error) {
+      console.error('Failed to initialize SignalR connection:', error);
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Connection Warning',
+        detail: 'Real-time updates may not be available'
+      });
+    }
+  }
+
+  private handleSupplierNotification(notification: SupplierNotification): void {
+    const { type, supplier } = notification;
+
+    switch (type) {
+      case 'created':
+        // Add new supplier to the list
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Supplier Added',
+          detail: `"${supplier.name}" has been added`
+        });
+        break;
+
+      case 'updated':
+        // Update existing supplier in the list
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Supplier Updated',
+          detail: `"${supplier.name}" has been updated`
+        });
+        break;
+
+      case 'deleted':
+        // Remove supplier from the list
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Supplier Deleted',
+          detail: `Supplier has been deleted`
+        });
+        break;
+    }
   }
 }

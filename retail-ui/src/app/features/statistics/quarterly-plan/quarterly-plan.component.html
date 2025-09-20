@@ -13,6 +13,24 @@
         <div class="text-right">
           <div class="text-2xl font-bold">{{ suppliers.length }}</div>
           <div class="text-sm opacity-90">Total Plans</div>
+          <div class="flex align-items-center justify-content-end mt-2">
+            <div class="flex align-items-center gap-2">
+              <div 
+                class="w-2rem h-2rem border-round flex align-items-center justify-content-center"
+                [style]="{
+                  'background': connectionStatus === 'Connected' ? '#10b981' : connectionStatus === 'Reconnecting' ? '#f59e0b' : '#ef4444',
+                  'color': 'white'
+                }"
+              >
+                <i 
+                  [class]="connectionStatus === 'Connected' ? 'pi pi-wifi' : connectionStatus === 'Reconnecting' ? 'pi pi-spin pi-spinner' : 'pi pi-wifi-slash'"
+                ></i>
+              </div>
+              <span class="text-xs opacity-90">
+                {{ connectionStatus === 'Connected' ? 'Live Updates' : connectionStatus === 'Reconnecting' ? 'Reconnecting...' : 'Offline' }}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </p-card>
